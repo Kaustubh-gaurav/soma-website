@@ -262,11 +262,11 @@ button, input { font: inherit; color: inherit; }
   position: absolute;
   z-index: 6;
   left: var(--v1);
-  top: calc(var(--h1) + 25 * var(--sy));
+  top: calc(var(--h1) + 25 * var(--sy) - 8px);   /* less the first row's top padding */
   opacity: 1;
   transition: opacity 500ms ease 300ms;
 }
-.stage.is-home .rail,
+/* Home shows the ticks with nothing selected; only the form screen hides the rail. */
 .stage.is-boxed .rail { opacity: 0; pointer-events: none; transition-delay: 0ms; }
 
 /* Every video section is listed; the current one is highlighted. */
@@ -275,16 +275,16 @@ button, input { font: inherit; color: inherit; }
   margin: 0;
   padding: 0;
 }
-.rail__list li + li { margin-top: 16px; }
+
 
 .rail__item {
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 16px;
-  /* A taller invisible hit area, so the short ticks are easy to hover. */
+  height: 32px;
+  /* Each row is 16 tall with a 16 gap (Figma). The gap is folded into the button as
+     padding, so hovering anywhere between two ticks still lands on one of them. */
   padding: 8px 8px 8px 0;
-  margin: -8px 0;
   background: none;
   border: 0;
   cursor: pointer;
@@ -315,7 +315,7 @@ button, input { font: inherit; color: inherit; }
 .rail__item:focus-visible .rail__label,
 .rail__item.is-current .rail__label { max-width: 240px; opacity: 1; transform: none; }
 
-.rail__item.is-current { opacity: 1; height: 19px; font-size: 14px; color: var(--paper); }
+.rail__item.is-current { opacity: 1; height: 35px; font-size: 14px; color: var(--paper); }
 
 .backed {
   position: absolute;
@@ -345,7 +345,7 @@ button, input { font: inherit; color: inherit; }
     --fold-box: calc(100svh - 96px);
   }
   .logo { left: calc(var(--v1) + 16px); top: 22px; font-size: 20px; }
-  .rail { top: calc(var(--h1) + 20px); }
+  .rail { top: calc(var(--h1) + 12px); }
   .copy { left: calc(var(--v1) + 16px); width: calc(var(--v2) - var(--v1) - 32px); max-width: none; bottom: calc(100svh - var(--fold) + 24px); gap: 20px; }
   .display, .box .display { font-size: 32px; letter-spacing: -1px; }
   .backed { right: auto; left: calc(var(--v1) + 16px); top: calc(var(--fold) + 28px); gap: 14px; }
