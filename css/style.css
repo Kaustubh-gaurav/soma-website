@@ -10,7 +10,8 @@
 @property --v2 { syntax: "<length>"; inherits: true; initial-value: 1200px; }
 @property --h1 { syntax: "<length>"; inherits: true; initial-value: 80px; }
 @property --fold { syntax: "<length>"; inherits: true; initial-value: 751px; }
-@property --backed-dy { syntax: "<length>"; inherits: true; initial-value: 17px; }
+@property --logo-dx { syntax: "<length>"; inherits: true; initial-value: 33px; }
+@property --backed-dx { syntax: "<length>"; inherits: true; initial-value: 32px; }
 
 :root {
   --paper: #F2F1ED;
@@ -43,9 +44,9 @@ button, input { font: inherit; color: inherit; }
   --fold-open: calc(751 * var(--sy));
   --v1-open: calc(80 * var(--sx));
   --v2-open: calc(100vw - 80 * var(--sx));
-  /* Box around the form (Figma MacBook Air 24): 548 wide and centred, h1 at 87, fold at 671. */
-  --h1-box: calc(87 * var(--sy));
-  --fold-box: calc(671 * var(--sy));
+  /* Box around the form (Figma MacBook Air 39): 548 wide and centred, h1 at 140, fold at 692. */
+  --h1-box: calc(140 * var(--sy));
+  --fold-box: calc(692 * var(--sy));
   --v1-box: calc(50vw - 274 * var(--s));
   --v2-box: calc(50vw + 274 * var(--s));
 
@@ -53,10 +54,11 @@ button, input { font: inherit; color: inherit; }
   --fold: var(--fold-open);
   --v1: var(--v1-open);
   --v2: var(--v2-open);
-  --backed-dy: calc(17 * var(--sy));
+  --logo-dx: calc(33 * var(--s));     /* logo distance from the left rule */
+  --backed-dx: calc(32 * var(--s));   /* backers distance from the right rule */
   transition: --v1 var(--slide) var(--ease), --v2 var(--slide) var(--ease),
               --h1 var(--slide) var(--ease), --fold var(--slide) var(--ease),
-              --backed-dy var(--slide) var(--ease);
+              --logo-dx var(--slide) var(--ease), --backed-dx var(--slide) var(--ease);
 
   position: fixed;
   inset: 0;
@@ -68,7 +70,8 @@ button, input { font: inherit; color: inherit; }
 .stage.is-boxed {
   --v1: var(--v1-box); --v2: var(--v2-box);
   --h1: var(--h1-box); --fold: var(--fold-box);
-  --backed-dy: calc(33 * var(--sy));
+  --logo-dx: calc(25 * var(--s));
+  --backed-dx: calc(24 * var(--s));
 }
 
 /* ---------- Scenes ---------- */
@@ -157,7 +160,7 @@ button, input { font: inherit; color: inherit; }
 .btn--light { background: var(--paper); color: var(--ink); }
 .btn--light:hover { background: #fff; }
 .btn--light:active { transform: translateY(1px); }
-.btn--block { width: 100%; }
+.btn--block { width: 100%; border-radius: 4px; }
 .btn:focus-visible, .rail__item:focus-visible, .logo:focus-visible, .field input:focus-visible {
   outline: 1px solid var(--paper);
   outline-offset: 4px;
@@ -172,7 +175,7 @@ button, input { font: inherit; color: inherit; }
   width: calc(var(--v2) - var(--v1) - 1px);
   top: calc(var(--h1) + 1px);
   height: calc(var(--fold) - var(--h1) - 1px);
-  padding: calc(16 * var(--s));
+  padding: calc(24 * var(--s));
   display: flex;
   flex-direction: column;
   gap: calc(32 * var(--s));
@@ -184,17 +187,13 @@ button, input { font: inherit; color: inherit; }
   display: flex;
   flex-direction: column;
   gap: calc(24 * var(--s));
-  padding: calc(24 * var(--s));
-  background: rgb(0 0 0 / 0.21);
-  backdrop-filter: blur(44px);
-  -webkit-backdrop-filter: blur(44px);
 }
 .field {
   display: flex;
   flex-direction: column;
   gap: calc(12 * var(--s));
   padding-bottom: calc(8 * var(--s));
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid var(--paper);
 }
 .field__label {
   font-weight: 500;
@@ -214,7 +213,7 @@ button, input { font: inherit; color: inherit; }
 }
 .field input::placeholder { color: var(--placeholder); opacity: 1; }
 .field input:focus { outline: none; }
-.field:focus-within { border-bottom-color: var(--paper); }
+.field:focus-within { box-shadow: 0 1px 0 var(--paper); }
 .field.is-invalid { border-bottom-color: #E0785A; }
 .form__status { margin: 0; min-height: 1em; font-size: max(13px, calc(14 * var(--s))); color: var(--paper); }
 .form__status:empty { display: none; }
@@ -242,7 +241,7 @@ button, input { font: inherit; color: inherit; }
 .logo {
   position: absolute;
   z-index: 6;
-  left: calc(var(--v1) + 33 * var(--s));
+  left: calc(var(--v1) + var(--logo-dx));
   top: calc(28 * var(--sy));
   font-weight: 500;
   font-size: max(20px, calc(24 * var(--s)));
@@ -296,8 +295,8 @@ button, input { font: inherit; color: inherit; }
 .backed {
   position: absolute;
   z-index: 6;
-  right: calc(100vw - var(--v2) + 32 * var(--s));
-  top: calc(var(--fold) + var(--backed-dy));
+  right: calc(100vw - var(--v2) + var(--backed-dx));
+  top: calc(768 * var(--sy));
   display: flex;
   align-items: center;
   gap: calc(24 * var(--s));
@@ -319,18 +318,16 @@ button, input { font: inherit; color: inherit; }
     --h1-box: 64px;
     --fold-open: calc(100svh - 96px);
     --fold-box: calc(100svh - 96px);
-    --backed-dy: 28px;
   }
-  .stage.is-boxed { --backed-dy: 28px; }
   .logo { left: calc(var(--v1) + 16px); top: 22px; font-size: 20px; }
   .rail { top: calc(var(--h1) + 20px); }
   .copy { left: calc(var(--v1) + 16px); width: calc(var(--v2) - var(--v1) - 32px); max-width: none; bottom: calc(100svh - var(--fold) + 24px); gap: 20px; }
   .display, .box .display { font-size: 32px; letter-spacing: -1px; }
-  .backed { right: auto; left: calc(var(--v1) + 16px); gap: 14px; }
+  .backed { right: auto; left: calc(var(--v1) + 16px); top: calc(var(--fold) + 28px); gap: 14px; }
   .backed__label { font-size: 11px; }
   .backed__apollo, .backed__morepen { height: 32px; }
   .box { padding: 16px; gap: 20px; }
-  .form { padding: 16px; gap: 18px; }
+  .form { gap: 18px; }
   .field { gap: 8px; }
 }
 
