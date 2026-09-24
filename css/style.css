@@ -7,7 +7,10 @@
 
 /* Registered so the lines can animate when they close into the box. */
 @property --v1 { syntax: "<length>"; inherits: true; initial-value: 80px; }
-@property --v2 { syntax: "<length>"; inherits: true; initial-value: 1104px; }
+@property --v2 { syntax: "<length>"; inherits: true; initial-value: 1200px; }
+@property --h1 { syntax: "<length>"; inherits: true; initial-value: 80px; }
+@property --fold { syntax: "<length>"; inherits: true; initial-value: 751px; }
+@property --backed-dy { syntax: "<length>"; inherits: true; initial-value: 17px; }
 
 :root {
   --paper: #F2F1ED;
@@ -35,16 +38,25 @@ button, input { font: inherit; color: inherit; }
   --sy: calc(100svh / 832);
   --s: min(var(--sx), var(--sy));
 
-  --h1: calc(80 * var(--sy));
-  --fold: calc(671 * var(--sy));
+  /* Open frame (Figma MacBook Air 17, 33 to 38): 80 margins both sides, fold at 751. */
+  --h1-open: calc(80 * var(--sy));
+  --fold-open: calc(751 * var(--sy));
   --v1-open: calc(80 * var(--sx));
-  --v2-open: calc(100vw - 176 * var(--sx));
+  --v2-open: calc(100vw - 80 * var(--sx));
+  /* Box around the form (Figma MacBook Air 24): 548 wide and centred, h1 at 87, fold at 671. */
+  --h1-box: calc(87 * var(--sy));
+  --fold-box: calc(671 * var(--sy));
   --v1-box: calc(50vw - 274 * var(--s));
   --v2-box: calc(50vw + 274 * var(--s));
 
+  --h1: var(--h1-open);
+  --fold: var(--fold-open);
   --v1: var(--v1-open);
   --v2: var(--v2-open);
-  transition: --v1 var(--slide) var(--ease), --v2 var(--slide) var(--ease);
+  --backed-dy: calc(17 * var(--sy));
+  transition: --v1 var(--slide) var(--ease), --v2 var(--slide) var(--ease),
+              --h1 var(--slide) var(--ease), --fold var(--slide) var(--ease),
+              --backed-dy var(--slide) var(--ease);
 
   position: fixed;
   inset: 0;
@@ -53,7 +65,11 @@ button, input { font: inherit; color: inherit; }
   background: #000;
   touch-action: none;
 }
-.stage.is-boxed { --v1: var(--v1-box); --v2: var(--v2-box); }
+.stage.is-boxed {
+  --v1: var(--v1-box); --v2: var(--v2-box);
+  --h1: var(--h1-box); --fold: var(--fold-box);
+  --backed-dy: calc(33 * var(--sy));
+}
 
 /* ---------- Scenes ---------- */
 
@@ -104,10 +120,10 @@ button, input { font: inherit; color: inherit; }
 .copy {
   position: absolute;
   z-index: 4;
-  left: calc(var(--v1) + 33 * var(--s));
-  bottom: calc(100svh - var(--fold) + 40 * var(--s));
-  width: calc(801 * var(--s));
-  max-width: calc(var(--v2) - var(--v1) - 66 * var(--s));
+  left: calc(var(--v1) + 25 * var(--s));
+  bottom: calc(100svh - var(--fold) + 24 * var(--s));
+  width: calc(785 * var(--s));
+  max-width: calc(var(--v2) - var(--v1) - 50 * var(--s));
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -240,28 +256,19 @@ button, input { font: inherit; color: inherit; }
   position: absolute;
   z-index: 6;
   left: var(--v1);
-  top: calc(var(--h1) + 41 * var(--sy));
+  top: calc(var(--h1) + 25 * var(--sy));
   opacity: 1;
   transition: opacity 500ms ease 300ms;
 }
 .stage.is-home .rail,
 .stage.is-boxed .rail { opacity: 0; pointer-events: none; transition-delay: 0ms; }
 
-/* Three rows show at a time; the list scrolls so any section can be picked. */
+/* Every video section is listed; the current one is highlighted. */
 .rail__list {
-  --row: calc(19px + 16px);
   list-style: none;
   margin: 0;
   padding: 0;
-  height: calc(var(--row) * 3 - 16px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-  scroll-snap-type: y proximity;
-  touch-action: pan-y;
 }
-.rail__list::-webkit-scrollbar { display: none; }
-.rail__list li { scroll-snap-align: start; }
 .rail__list li + li { margin-top: 16px; }
 
 .rail__item {
@@ -290,12 +297,12 @@ button, input { font: inherit; color: inherit; }
   position: absolute;
   z-index: 6;
   right: calc(100vw - var(--v2) + 32 * var(--s));
-  top: calc(var(--fold) + 17 * var(--sy));
+  top: calc(var(--fold) + var(--backed-dy));
   display: flex;
   align-items: center;
   gap: calc(24 * var(--s));
 }
-.backed__label { font-weight: 500; font-size: max(11px, calc(14 * var(--s))); line-height: 1; color: #fff; }
+.backed__label { font-weight: 500; font-size: max(11px, calc(14 * var(--s))); line-height: 1; color: #fff; opacity: 0.4; }
 .backed__apollo { height: calc(40 * var(--s)); width: auto; margin-right: calc(-8 * var(--s)); }
 .backed__morepen { height: calc(40 * var(--s)); width: auto; }
 
@@ -308,14 +315,18 @@ button, input { font: inherit; color: inherit; }
     --v2-open: calc(100vw - 20px);
     --v1-box: 20px;
     --v2-box: calc(100vw - 20px);
-    --h1: 64px;
-    --fold: calc(100svh - 96px);
+    --h1-open: 64px;
+    --h1-box: 64px;
+    --fold-open: calc(100svh - 96px);
+    --fold-box: calc(100svh - 96px);
+    --backed-dy: 28px;
   }
+  .stage.is-boxed { --backed-dy: 28px; }
   .logo { left: calc(var(--v1) + 16px); top: 22px; font-size: 20px; }
   .rail { top: calc(var(--h1) + 20px); }
   .copy { left: calc(var(--v1) + 16px); width: calc(var(--v2) - var(--v1) - 32px); max-width: none; bottom: calc(100svh - var(--fold) + 24px); gap: 20px; }
   .display, .box .display { font-size: 32px; letter-spacing: -1px; }
-  .backed { right: auto; left: calc(var(--v1) + 16px); top: calc(var(--fold) + 28px); gap: 14px; }
+  .backed { right: auto; left: calc(var(--v1) + 16px); gap: 14px; }
   .backed__label { font-size: 11px; }
   .backed__apollo, .backed__morepen { height: 32px; }
   .box { padding: 16px; gap: 20px; }

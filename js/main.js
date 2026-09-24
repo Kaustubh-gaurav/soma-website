@@ -26,10 +26,10 @@
   var timer = null;
   var token = 0;                // bumps on every scene change, so stale timers and listeners do nothing
 
-  // ---------- Rail: every scene after the home screen ----------
+  // ---------- Rail: every video section, so not the home screen or the form ----------
 
   var railItems = scenes.map(function (scene, i) {
-    if (i === 0) return null;
+    if (i === 0 || i === last) return null;
     var li = document.createElement("li");
     var b = document.createElement("button");
     b.type = "button";
@@ -48,12 +48,6 @@
       b.classList.toggle("is-current", on);
       if (on) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
     });
-    // Keep the current item one row down, so the previous one shows above it (as in the Figma frames).
-    var li = railItems[current] && railItems[current].parentElement;
-    if (li) {
-      var prev = li.previousElementSibling;
-      railList.scrollTo({ top: prev ? prev.offsetTop - railList.offsetTop : 0, behavior: reduceMotion ? "auto" : "smooth" });
-    }
   }
 
   // ---------- Video ----------
@@ -170,7 +164,6 @@
   // fingers lift, so the stage waits for a quiet moment before it accepts the next gesture.
   var wheelSum = 0, wheelQuietTimer = null, wheelLocked = false;
   stage.addEventListener("wheel", function (e) {
-    if (railList.contains(e.target)) return;          // the rail scrolls itself
     e.preventDefault();
     clearTimeout(wheelQuietTimer);
     wheelQuietTimer = setTimeout(function () { wheelLocked = false; wheelSum = 0; }, 180);
@@ -185,7 +178,6 @@
 
   var touchY = null;
   stage.addEventListener("touchstart", function (e) {
-    if (railList.contains(e.target)) return;
     touchY = e.touches[0].clientY;
   }, { passive: true });
   stage.addEventListener("touchend", function (e) {
