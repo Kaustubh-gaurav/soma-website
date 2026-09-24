@@ -13,12 +13,12 @@
 <body>
   <main class="stage" id="stage">
 
-    <!-- Scenes: each one is a full screen video with one line of copy. They slide up as the visitor moves on. -->
+    <!-- Scenes: each one is a full screen video with one line of copy. Clips crossfade, and the copy
+         slides back into the left line as a scene leaves and out of it as the next one arrives. -->
     <div class="scenes">
 
       <section class="scene is-active" data-label="Home" aria-label="Home">
         <div class="media"><video src="assets/video/01-home.mp4" poster="assets/video/01-home.jpg" muted playsinline preload="auto"></video></div>
-        <div class="scrim"></div>
         <div class="copy">
           <h1 class="display">Real surgical video, audio and context, labeled for AI.</h1>
           <button class="btn btn--light" type="button" data-goto="last">Request a sample set</button>
@@ -27,41 +27,36 @@
 
       <section class="scene" data-label="Egocentric video" aria-label="Egocentric video">
         <div class="media"><video src="assets/video/02-egocentric.mp4" poster="assets/video/02-egocentric.jpg" muted playsinline preload="metadata"></video></div>
-        <div class="scrim"></div>
         <div class="copy"><h2 class="display">First person footage, recorded from the surgeon's own eyes.</h2></div>
       </section>
 
       <section class="scene" data-label="Multi view video" aria-label="Multi view video">
         <div class="media"><video src="assets/video/03-multiview.mp4" poster="assets/video/03-multiview.jpg" muted playsinline preload="metadata"></video></div>
-        <div class="scrim"></div>
         <div class="copy"><h2 class="display">Surgeon, scope and room, all on one clock.</h2></div>
       </section>
 
       <section class="scene" data-label="Fine motion" aria-label="Fine motion">
         <div class="media"><video src="assets/video/04-fine-motion.mp4" poster="assets/video/04-fine-motion.jpg" muted playsinline preload="metadata"></video></div>
-        <div class="scrim"></div>
         <div class="copy"><h2 class="display">Every millimetre of instrument movement, captured.</h2></div>
       </section>
 
       <section class="scene" data-label="Annotated datasets" aria-label="Annotated datasets">
         <div class="media"><video src="assets/video/05-annotated.mp4" poster="assets/video/05-annotated.jpg" muted playsinline preload="metadata"></video></div>
-        <div class="scrim"></div>
         <div class="copy"><h2 class="display">Instruments, anatomy and phases, labeled frame by frame.</h2></div>
       </section>
 
       <section class="scene" data-label="Clinical audio" aria-label="Clinical audio">
         <div class="media"><video src="assets/video/06-audio.mp4" poster="assets/video/06-audio.jpg" muted playsinline preload="metadata"></video></div>
-        <div class="scrim"></div>
         <div class="copy"><h2 class="display">Each voice separated, transcribed and time aligned.</h2></div>
       </section>
 
       <section class="scene" data-label="Headset" aria-label="Headset">
         <div class="media"><video src="assets/video/07-headset.mp4" poster="assets/video/07-headset.jpg" muted playsinline preload="metadata"></video></div>
-        <div class="scrim"></div>
         <div class="copy"><h2 class="display">Recording sight and sound, without getting in the way.</h2></div>
       </section>
 
       <section class="scene scene--form" data-label="Custom datasets" aria-label="Custom datasets">
+        <div class="media media--black"></div>
         <div class="box">
           <h2 class="display">Tell us what your model needs. We record it.</h2>
           <form class="form" id="request-form" novalidate>
@@ -83,6 +78,9 @@
         </div>
       </section>
     </div>
+
+    <!-- One shared shade over every clip, so the crossfade never doubles it up. -->
+    <div class="scrim" aria-hidden="true"></div>
 
     <!-- The frame: four hairlines and their crosses. They stay put, and close into a box on the last scene. -->
     <div class="frame" aria-hidden="true">

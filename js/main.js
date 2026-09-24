@@ -1,7 +1,7 @@
 /* SOMA slideshow.
    Each scene plays its clip once, then moves on by itself. The visitor can also move with the
-   wheel, trackpad, arrow keys, a swipe, or the section rail. The old scene slides up, the new
-   one slides in from below, and on the last scene the lines close into a box around the form. */
+   wheel, trackpad, arrow keys, a swipe, or the section rail. Clips crossfade, the copy slides into
+   the left line and back out of it, and on the last scene the lines close into a box around the form. */
 (function () {
   "use strict";
 
@@ -9,7 +9,8 @@
   var FORM_ENDPOINT = "";
 
   var FALLBACK_SECONDS = 5.5;   // used if a clip's length cannot be read
-  var FADE_MS = 450;            // keep in step with --fade in style.css
+  var LEAVE_MS = 500;           // how long a leaving scene stays drawn: covers --fade and --text-out in style.css
+  var READY_WAIT_MS = 4000;     // longest the slideshow waits for a slow clip before moving on anyway
   var WHEEL_THRESHOLD = 30;     // how much wheel travel counts as one step
   var SWIPE_THRESHOLD = 50;
 
@@ -24,6 +25,7 @@
   var current = 0;
   var busy = false;
   var timer = null;
+  var token = 0;                // bumps on every scene change, so stale timers and listeners do nothing
 
   // ---------- Rail: every scene after the home screen ----------
 
@@ -80,28 +82,50 @@
     })();
   }
 
+  function isReady(v) { return !v || v.readyState >= 3; }
+
+  // Calls fn once the clip has enough data to play smoothly, or after READY_WAIT_MS at most.
+  function whenReady(v, fn) {
+    if (isReady(v)) return fn();
+    var fired = false;
+    var once = function () { if (fired) return; fired = true; v.removeEventListener("canplay", once); fn(); };
+    v.addEventListener("canplay", once);
+    setTimeout(once, READY_WAIT_MS);
+  }
+
   function startScene(i) {
     clearTimeout(timer);
+    var my = ++token;
     var v = videoOf(i);
-    var seconds = FALLBACK_SECONDS;
-    if (v) {
-      if (isFinite(v.duration) && v.duration > 0) seconds = v.duration;
-      scenes[i].style.setProperty("--dur", seconds + "s");
-      try { v.currentTime = 0; } catch (e) {}
-      if (!reduceMotion) {
-        var p = v.play();
-        if (p && p.catch) p.catch(function () {});
-      }
-    }
     warm(i + 1);
-    if (autoAdvance && i < last) {
-      timer = setTimeout(function () { if (!document.hidden) go(i + 1); }, seconds * 1000);
+    if (!v) return;                                   // the form has no clip and no timer
+
+    var seconds = isFinite(v.duration) && v.duration > 0 ? v.duration : FALLBACK_SECONDS;
+    scenes[i].style.setProperty("--dur", seconds + "s");
+    if (v.currentTime > 0.05) { try { v.currentTime = 0; } catch (e) {} }
+    if (!reduceMotion) {
+      var p = v.play();
+      if (p && p.catch) p.catch(function () {});
     }
+    if (!autoAdvance || i >= last) return;
+
+    // Count the clip's time from when it is actually playing, not from when it was asked to,
+    // then only cut to the next scene once that clip is ready, so nothing opens on a frozen frame.
+    var armed = false;
+    var arm = function () {
+      if (armed || my !== token) return;
+      armed = true;
+      timer = setTimeout(function () {
+        whenReady(videoOf(i + 1), function () { if (my === token && !document.hidden) go(i + 1); });
+      }, seconds * 1000);
+    };
+    if (!v.paused && v.readyState >= 3) arm();
+    else { v.addEventListener("playing", arm, { once: true }); setTimeout(arm, READY_WAIT_MS); }
   }
 
   function stopScene(i) {
     var v = videoOf(i);
-    if (v) setTimeout(function () { if (i !== current) v.pause(); }, FADE_MS);
+    if (v) setTimeout(function () { if (i !== current) v.pause(); }, LEAVE_MS);
   }
 
   // ---------- Moving between scenes ----------
@@ -128,7 +152,7 @@
     setTimeout(function () {
       from.classList.remove("is-leaving");
       busy = false;
-    }, reduceMotion ? 50 : FADE_MS);
+    }, reduceMotion ? 50 : LEAVE_MS);
   }
 
   function setState() {
