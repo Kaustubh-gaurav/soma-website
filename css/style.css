@@ -102,10 +102,25 @@ button, input { font: inherit; color: inherit; }
 .scene.is-leaving .media { opacity: 1; }
 .scene.is-active .media { opacity: 1; z-index: 2; transition: opacity var(--fade) ease; }
 
-/* The slow push in is baked into the clips themselves, so the browser only has to play them. */
+/* The slow push in is baked into the clips themselves, so the browser only has to play them.
+   Each clip is the full frame. Its Figma crop (--cx, --cy, --cw, --ch, fractions of the clip) is
+   scaled to fit the screen whole, then the clip is grown until it covers the screen and centred on
+   the crop. A wide window shows more footage at the sides instead of cutting the crop's top and
+   bottom off. With no crop set, this is plain cover. */
+.media {
+  --cx: 0; --cy: 0; --cw: 1; --ch: 1;
+  --ar: 1.7778;
+  --vw: 100vw;
+  --vh: 100svh;
+  --W: max(min(calc(var(--vw) / var(--cw)), calc(var(--vh) * var(--ar) / var(--ch))), var(--vw), calc(var(--vh) * var(--ar)));
+}
 .media video {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  width: var(--W);
+  height: calc(var(--W) / var(--ar));
+  left: clamp(calc(var(--vw) - var(--W)), calc(var(--vw) / 2 - var(--W) * (var(--cx) + var(--cw) / 2)), 0px);
+  top: clamp(calc(var(--vh) - var(--W) / var(--ar)), calc(var(--vh) / 2 - var(--W) / var(--ar) * (var(--cy) + var(--ch) / 2)), 0px);
+  max-width: none;
   object-fit: cover;
   display: block;
 }
