@@ -17,7 +17,8 @@
   --paper: #F2F1ED;
   --ink: #1D1C19;
   --placeholder: #7F7E7B;
-  --rule: rgb(255 255 255 / 0.55);
+  --rule: rgb(255 255 255 / 0.4);        /* Figma is 0.55; dimmed so the crosses read clearly */
+  --cross: #FFFFFF;                      /* Figma is paper #F2F1ED; brightened for contrast */
 
   --ease: cubic-bezier(0.76, 0, 0.24, 1);
   --slide: 900ms;   /* the lines closing into the box */
@@ -237,7 +238,7 @@ button, input { font: inherit; color: inherit; }
 
 /* A cross is two 17px arms centred on the point where two rules meet. */
 .cross { position: absolute; width: 0; height: 0; }
-.cross::before, .cross::after { content: ""; position: absolute; background: var(--paper); }
+.cross::before, .cross::after { content: ""; position: absolute; background: var(--cross); }
 .cross::before { left: round(-8px, var(--snap)); width: 17px; top: 0; height: var(--hair); }
 .cross::after { top: round(-8px, var(--snap)); height: 17px; left: 0; width: var(--hair); }
 .cross--tl { left: round(var(--v1), var(--snap)); top: round(var(--h1), var(--snap)); }
