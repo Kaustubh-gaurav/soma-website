@@ -1,7 +1,6 @@
 /* SOMA slideshow.
    Each scene plays its clip once, then moves on by itself. The visitor can also move with the
-   wheel, trackpad, arrow keys, a swipe, or the section rail. Clips crossfade, the copy slides into
-   the left line and back out of it, and on the last scene the lines close into a box around the form. */
+   wheel, trackpad, arrow keys, a swipe, or the section rail. Scenes crossfade, and on the last scene the lines close into a box around the form. */
 (function () {
   "use strict";
 
@@ -9,7 +8,7 @@
   var FORM_ENDPOINT = "";
 
   var FALLBACK_SECONDS = 5.5;   // used if a clip's length cannot be read
-  var LEAVE_MS = 500;           // how long a leaving scene stays drawn: covers --fade and --text-out in style.css
+  var LEAVE_MS = 500;           // how long a leaving scene stays drawn: covers --fade in style.css
   var READY_WAIT_MS = 4000;     // longest the slideshow waits for a slow clip before moving on anyway
   var WHEEL_THRESHOLD = 30;     // how much wheel travel counts as one step
   var SWIPE_THRESHOLD = 50;
@@ -101,7 +100,6 @@
     if (!v) return;                                   // the form has no clip and no timer
 
     var seconds = isFinite(v.duration) && v.duration > 0 ? v.duration : FALLBACK_SECONDS;
-    scenes[i].style.setProperty("--dur", seconds + "s");
     if (v.currentTime > 0.05) { try { v.currentTime = 0; } catch (e) {} }
     if (!reduceMotion) {
       var p = v.play();

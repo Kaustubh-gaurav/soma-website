@@ -17,10 +17,7 @@
 
   --ease: cubic-bezier(0.76, 0, 0.24, 1);
   --slide: 900ms;   /* the lines closing into the box */
-  --fade: 450ms;    /* clip crossfade */
-  --text-out: 380ms;
-  --text-in: 750ms;
-  --text-delay: 300ms;
+  --fade: 450ms;    /* scene crossfade */
 }
 
 * { box-sizing: border-box; }
@@ -85,18 +82,13 @@ button, input { font: inherit; color: inherit; }
 .scene.is-leaving .media { opacity: 1; }
 .scene.is-active .media { opacity: 1; z-index: 2; transition: opacity var(--fade) ease; }
 
-/* The slow push in runs on the video's own GPU layer. */
+/* The slow push in is baked into the clips themselves, so the browser only has to play them. */
 .media video {
-  transform: scale(1.02);
-  will-change: transform;
-  backface-visibility: hidden;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
-.scene.is-active .media video { animation: push var(--dur, 5.5s) linear forwards; }
-@keyframes push { from { transform: scale(1.02); } to { transform: scale(1.12); } }
 
 /* Figma plate: black at 40%, then a black gradient from clear at the top to 60% at the bottom. */
 .scrim {
@@ -110,10 +102,9 @@ button, input { font: inherit; color: inherit; }
 }
 
 .copy {
-  --gap: calc(33 * var(--s));          /* distance from the left line to the text */
   position: absolute;
   z-index: 4;
-  left: calc(var(--v1) + var(--gap));
+  left: calc(var(--v1) + 33 * var(--s));
   bottom: calc(100svh - var(--fold) + 40 * var(--s));
   width: calc(801 * var(--s));
   max-width: calc(var(--v2) - var(--v1) - 66 * var(--s));
@@ -121,24 +112,13 @@ button, input { font: inherit; color: inherit; }
   flex-direction: column;
   align-items: flex-start;
   gap: calc(32 * var(--s));
-  /* Everything left of the line is cut away, so the copy looks like it slides out of the line. */
-  clip-path: inset(-40% -40% -40% calc(0px - var(--gap)));
 }
 
-/* Leaving: the copy slides left and disappears into the line. */
-.copy > *,
-.box > * {
-  transform: translate3d(calc(-100% - var(--gap) - 2px), 0, 0);
-  transition: transform var(--text-out) cubic-bezier(0.55, 0, 0.9, 0.3);
-}
-/* Arriving: it slides back out of the line once the old copy is gone. */
-.scene.is-active .copy > *,
-.scene.is-active .box > * {
-  transform: translate3d(0, 0, 0);
-  transition: transform var(--text-in) cubic-bezier(0.16, 1, 0.3, 1) var(--text-delay);
-}
-.scene.is-active .copy > * + *,
-.scene.is-active .box > * + * { transition-delay: calc(var(--text-delay) + 90ms); }
+/* Copy fades with its scene. */
+.copy,
+.box { opacity: 0; transition: opacity var(--fade) ease; }
+.scene.is-active .copy,
+.scene.is-active .box { opacity: 1; }
 
 .display {
   margin: 0;
@@ -169,10 +149,7 @@ button, input { font: inherit; color: inherit; }
 
 /* ---------- Last scene: the box and the form ---------- */
 
-/* The form waits for the lines to close before its content slides out of the left line. */
-.scene--form { --text-delay: 550ms; }
 .box {
-  --gap: calc(16 * var(--s));
   z-index: 4;
   position: absolute;
   left: calc(var(--v1) + 1px);
@@ -336,18 +313,17 @@ button, input { font: inherit; color: inherit; }
   }
   .logo { left: calc(var(--v1) + 16px); top: 22px; font-size: 20px; }
   .rail { top: calc(var(--h1) + 20px); }
-  .copy { --gap: 16px; left: calc(var(--v1) + 16px); width: calc(var(--v2) - var(--v1) - 32px); max-width: none; bottom: calc(100svh - var(--fold) + 24px); gap: 20px; }
+  .copy { left: calc(var(--v1) + 16px); width: calc(var(--v2) - var(--v1) - 32px); max-width: none; bottom: calc(100svh - var(--fold) + 24px); gap: 20px; }
   .display, .box .display { font-size: 32px; letter-spacing: -1px; }
   .backed { right: auto; left: calc(var(--v1) + 16px); top: calc(var(--fold) + 28px); gap: 14px; }
   .backed__label { font-size: 11px; }
   .backed__apollo, .backed__morepen { height: 32px; }
-  .box { --gap: 16px; padding: 16px; gap: 20px; }
+  .box { padding: 16px; gap: 20px; }
   .form { padding: 16px; gap: 18px; }
   .field { gap: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .stage, .rail { transition-duration: 1ms !important; }
-  .scene.is-active .media video { animation: none; }
-  .copy > *, .box > * { transition: none !important; }
+  .media, .copy, .box { transition: none !important; }
 }
