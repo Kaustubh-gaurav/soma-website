@@ -230,7 +230,7 @@ button, input { font: inherit; color: inherit; }
 .rule--fold { top: var(--fold); }
 
 .cross { position: absolute; width: 17px; height: 17px; margin: -8px 0 0 -8px; }
-.cross::before, .cross::after { content: ""; position: absolute; background: #fff; }
+.cross::before, .cross::after { content: ""; position: absolute; background: var(--paper); }
 .cross::before { left: 0; right: 0; top: 8px; height: 1px; }
 .cross::after { top: 0; bottom: 0; left: 8px; width: 1px; }
 .cross--tl { left: var(--v1); top: var(--h1); }
