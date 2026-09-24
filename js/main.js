@@ -243,6 +243,18 @@
       .catch(function () { status.textContent = "Something went wrong. Please try again."; });
   });
 
+  // ---------- Hairlines ----------
+
+  // One screen pixel in CSS pixels, and the hairline thickness rounded to whole screen pixels,
+  // so every rule renders equally sharp at any display scaling or browser zoom.
+  function setHairline() {
+    var dpr = window.devicePixelRatio || 1;
+    stage.style.setProperty("--snap", (1 / dpr) + "px");
+    stage.style.setProperty("--hair", (Math.max(1, Math.round(dpr)) / dpr) + "px");
+  }
+  setHairline();
+  window.addEventListener("resize", setHairline);
+
   // ---------- Start ----------
 
   // ?s=3 opens on a given scene, which makes reviewing one screen easier.

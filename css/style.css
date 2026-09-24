@@ -221,22 +221,29 @@ button, input { font: inherit; color: inherit; }
 /* ---------- Fixed chrome: lines, crosses, logo, rail, backers ---------- */
 
 .frame { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
-.rule { position: absolute; background: var(--rule); }
-.rule--v1, .rule--v2 { top: 0; bottom: 0; width: 1px; }
-.rule--v1 { left: var(--v1); }
-.rule--v2 { left: var(--v2); }
-.rule--h1, .rule--fold { left: 0; right: 0; height: 1px; }
-.rule--h1 { top: var(--h1); }
-.rule--fold { top: var(--fold); }
 
-.cross { position: absolute; width: 17px; height: 17px; margin: -8px 0 0 -8px; }
+/* Hairlines are snapped to whole screen pixels. With display scaling (Windows at 125%, for
+   example) a 1px line at a scaled position would otherwise straddle two screen pixels and look
+   thicker and brighter than its neighbours. --snap is one screen pixel and --hair one screen
+   pixel at the nearest whole count; main.js sets both from devicePixelRatio. */
+.stage { --snap: 1px; --hair: 1px; }
+.rule { position: absolute; background: var(--rule); }
+.rule--v1, .rule--v2 { top: 0; bottom: 0; width: var(--hair); }
+.rule--v1 { left: round(var(--v1), var(--snap)); }
+.rule--v2 { left: round(var(--v2), var(--snap)); }
+.rule--h1, .rule--fold { left: 0; right: 0; height: var(--hair); }
+.rule--h1 { top: round(var(--h1), var(--snap)); }
+.rule--fold { top: round(var(--fold), var(--snap)); }
+
+/* A cross is two 17px arms centred on the point where two rules meet. */
+.cross { position: absolute; width: 0; height: 0; }
 .cross::before, .cross::after { content: ""; position: absolute; background: var(--paper); }
-.cross::before { left: 0; right: 0; top: 8px; height: 1px; }
-.cross::after { top: 0; bottom: 0; left: 8px; width: 1px; }
-.cross--tl { left: var(--v1); top: var(--h1); }
-.cross--tr { left: var(--v2); top: var(--h1); }
-.cross--bl { left: var(--v1); top: var(--fold); }
-.cross--br { left: var(--v2); top: var(--fold); }
+.cross::before { left: round(-8px, var(--snap)); width: 17px; top: 0; height: var(--hair); }
+.cross::after { top: round(-8px, var(--snap)); height: 17px; left: 0; width: var(--hair); }
+.cross--tl { left: round(var(--v1), var(--snap)); top: round(var(--h1), var(--snap)); }
+.cross--tr { left: round(var(--v2), var(--snap)); top: round(var(--h1), var(--snap)); }
+.cross--bl { left: round(var(--v1), var(--snap)); top: round(var(--fold), var(--snap)); }
+.cross--br { left: round(var(--v2), var(--snap)); top: round(var(--fold), var(--snap)); }
 
 .logo {
   position: absolute;
