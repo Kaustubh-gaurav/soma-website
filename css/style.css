@@ -330,6 +330,57 @@ button, input { font: inherit; color: inherit; }
 .backed__apollo { height: calc(40 * var(--s)); width: auto; margin-right: calc(-8 * var(--s)); }
 .backed__morepen { height: calc(40 * var(--s)); width: auto; }
 
+/* ---------- Loader ---------- */
+
+/* Black cover with the four crosses in place. Each rule is drawn as four segments that grow away
+   from the crosses as --p goes from 0 to 1: one out to each screen edge, and two that meet in
+   the middle. At 1 they sit exactly on the site's own rules, so fading the cover reveals the page
+   with nothing moving. */
+.loader {
+  --p: 0;
+  --X1: round(var(--v1), var(--snap));
+  --X2: round(var(--v2), var(--snap));
+  --Y1: round(var(--h1), var(--snap));
+  --Y2: round(var(--fold), var(--snap));
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: #000;
+  transition: opacity 700ms ease, visibility 0s linear 700ms;
+}
+.loader.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.seg { position: absolute; background: var(--rule); will-change: transform; }
+.seg--h { height: var(--hair); transform: scaleX(var(--p)); }
+.seg--v { width: var(--hair); transform: scaleY(var(--p)); }
+.seg--h1 { top: var(--Y1); }
+.seg--fold { top: var(--Y2); }
+.seg--v1 { left: var(--X1); }
+.seg--v2 { left: var(--X2); }
+
+.seg--out-l { left: 0; width: var(--X1); transform-origin: 100% 50%; }
+.seg--in-l { left: var(--X1); width: calc((var(--X2) - var(--X1)) / 2); transform-origin: 0 50%; }
+.seg--in-r { left: calc((var(--X1) + var(--X2)) / 2); width: calc((var(--X2) - var(--X1)) / 2); transform-origin: 100% 50%; }
+.seg--out-r { left: var(--X2); right: 0; transform-origin: 0 50%; }
+
+.seg--out-t { top: 0; height: var(--Y1); transform-origin: 50% 100%; }
+.seg--in-t { top: var(--Y1); height: calc((var(--Y2) - var(--Y1)) / 2); transform-origin: 50% 0; }
+.seg--in-b { top: calc((var(--Y1) + var(--Y2)) / 2); height: calc((var(--Y2) - var(--Y1)) / 2); transform-origin: 50% 100%; }
+.seg--out-b { top: var(--Y2); bottom: 0; transform-origin: 50% 0; }
+
+/* The count sits where every headline sits. */
+.loader__count {
+  position: absolute;
+  left: calc(var(--v1) + 25 * var(--s));
+  bottom: calc(100svh - var(--fold) + 24 * var(--s));
+  font-weight: 500;
+  font-size: max(30px, calc(56 * var(--s)));
+  line-height: 1;
+  letter-spacing: -1.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+}
+
 /* ---------- Small screens: the lines hug the edges and the copy gets room ---------- */
 
 @media (max-width: 760px) {
@@ -348,6 +399,7 @@ button, input { font: inherit; color: inherit; }
   .rail { top: calc(var(--h1) + 12px); }
   .copy { left: calc(var(--v1) + 16px); width: calc(var(--v2) - var(--v1) - 32px); max-width: none; bottom: calc(100svh - var(--fold) + 24px); gap: 20px; }
   .display, .box .display { font-size: 32px; letter-spacing: -1px; }
+  .loader__count { left: calc(var(--v1) + 16px); bottom: calc(100svh - var(--fold) + 24px); font-size: 32px; letter-spacing: -1px; }
   .backed { right: auto; left: calc(var(--v1) + 16px); top: calc(var(--fold) + 28px); gap: 14px; }
   .backed__label { font-size: 11px; }
   .backed__apollo, .backed__morepen { height: 32px; }
@@ -357,6 +409,6 @@ button, input { font: inherit; color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stage, .rail { transition-duration: 1ms !important; }
+  .stage, .rail, .loader { transition-duration: 1ms !important; }
   .media, .copy, .box { transition: none !important; }
 }

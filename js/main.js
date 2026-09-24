@@ -265,9 +265,76 @@
     current = startAt;
   }
   setState();
-  startScene(current);
 
-  var first = videoOf(current);
-  if (first && first.readyState < 3) first.addEventListener("canplay", preloadRest, { once: true });
-  else preloadRest();
+  // ---------- Loader ----------
+
+  // The count follows real loading: the fonts, then the opening clip's buffer. It never finishes
+  // faster than LOADER_MIN_MS, so the lines are seen growing, and never waits longer than
+  // LOADER_MAX_MS. The slideshow only starts once the cover fades, so the first clip gets its
+  // full time on screen.
+  var LOADER_MIN_MS = 1600;
+  var LOADER_MAX_MS = 10000;
+  var loader = document.getElementById("loader");
+  var countEl = document.getElementById("loader-count");
+  var firstVideo = videoOf(current);
+  if (firstVideo) warm(current);
+
+  var fontsDone = false;
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fontsDone = true; });
+  else fontsDone = true;
+
+  function videoLoaded() {
+    var v = firstVideo;
+    if (!v) return 1;
+    if (v.readyState >= 4) return 1;
+    try {
+      if (v.buffered.length && isFinite(v.duration) && v.duration > 0) {
+        return Math.min(1, v.buffered.end(v.buffered.length - 1) / v.duration);
+      }
+    } catch (e) {}
+    return 0;
+  }
+
+  function begin() {
+    startScene(current);
+    if (firstVideo && firstVideo.readyState < 3) firstVideo.addEventListener("canplay", preloadRest, { once: true });
+    else preloadRest();
+  }
+
+  if (!loader || params.has("noload") || reduceMotion) {
+    if (loader) loader.classList.add("is-done");
+    begin();
+  } else {
+    var t0 = performance.now();
+    var shown = 0;
+    var finished = false;
+    var finish = function () {
+      if (finished) return;
+      finished = true;
+      loader.style.setProperty("--p", "1");
+      countEl.textContent = "100";
+      loader.setAttribute("aria-valuenow", 100);
+      setTimeout(function () {
+        loader.classList.add("is-done");
+        begin();
+      }, 250);                                                // a beat at 100 before the reveal
+    };
+    // Safety net: animation frames pause in background tabs, so a plain timer guarantees the
+    // loader always finishes.
+    setTimeout(finish, LOADER_MAX_MS + 1000);
+    (function tick(now) {
+      if (finished) return;
+      var elapsed = now - t0;
+      var target = elapsed > LOADER_MAX_MS ? 1 : (fontsDone ? 0.25 : 0) + 0.75 * videoLoaded();
+      target = Math.min(target, elapsed / LOADER_MIN_MS);     // never outrun the minimum time
+      shown += (target - shown) * 0.12;                        // ease towards it
+      if (target >= 1 && shown > 0.995) shown = 1;
+      loader.style.setProperty("--p", shown.toFixed(4));
+      var pct = Math.floor(shown * 100);
+      countEl.textContent = pct;
+      loader.setAttribute("aria-valuenow", pct);
+      if (shown < 1) return requestAnimationFrame(tick);
+      finish();
+    })(t0);
+  }
 })();

@@ -100,6 +100,32 @@
       <ol class="rail__list"></ol>
     </nav>
 
+    <!-- Loader: the four crosses are already in place on black, the rules grow out of them as the
+         page loads, then the black fades away and the site's own rules are left in the same spot. -->
+    <div class="loader" id="loader" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <span class="seg seg--h seg--h1 seg--out-l"></span>
+      <span class="seg seg--h seg--h1 seg--in-l"></span>
+      <span class="seg seg--h seg--h1 seg--in-r"></span>
+      <span class="seg seg--h seg--h1 seg--out-r"></span>
+      <span class="seg seg--h seg--fold seg--out-l"></span>
+      <span class="seg seg--h seg--fold seg--in-l"></span>
+      <span class="seg seg--h seg--fold seg--in-r"></span>
+      <span class="seg seg--h seg--fold seg--out-r"></span>
+      <span class="seg seg--v seg--v1 seg--out-t"></span>
+      <span class="seg seg--v seg--v1 seg--in-t"></span>
+      <span class="seg seg--v seg--v1 seg--in-b"></span>
+      <span class="seg seg--v seg--v1 seg--out-b"></span>
+      <span class="seg seg--v seg--v2 seg--out-t"></span>
+      <span class="seg seg--v seg--v2 seg--in-t"></span>
+      <span class="seg seg--v seg--v2 seg--in-b"></span>
+      <span class="seg seg--v seg--v2 seg--out-b"></span>
+      <span class="cross cross--tl"></span>
+      <span class="cross cross--tr"></span>
+      <span class="cross cross--bl"></span>
+      <span class="cross cross--br"></span>
+      <span class="loader__count"><span id="loader-count">0</span>%</span>
+    </div>
+
     <div class="backed">
       <span class="backed__label">BACKED BY</span>
       <img src="assets/img/apollo.png" alt="Apollo Pharmacy" class="backed__apollo">
