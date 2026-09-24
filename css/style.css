@@ -274,8 +274,10 @@ button, input { font: inherit; color: inherit; }
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 19px;
-  padding: 0 8px 0 0;
+  height: 16px;
+  /* A taller invisible hit area, so the short ticks are easy to hover. */
+  padding: 8px 8px 8px 0;
+  margin: -8px 0;
   background: none;
   border: 0;
   cursor: pointer;
@@ -286,11 +288,27 @@ button, input { font: inherit; color: inherit; }
   letter-spacing: 0.6px;
   text-transform: uppercase;
   white-space: nowrap;
-  transition: opacity 300ms ease, font-size 300ms ease;
+  transition: opacity 250ms ease;
 }
 .rail__item::before { content: ""; width: 8px; height: 1px; background: currentColor; flex: none; }
-.rail__item:hover { opacity: 0.75; }
-.rail__item.is-current { opacity: 1; font-weight: 500; font-size: 14px; color: var(--paper); }
+
+/* Only the current section shows its name. The others are just ticks, and hovering one
+   previews its name (Figma MacBook Air 33). */
+.rail__label {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: max-width 300ms ease, opacity 200ms ease, transform 250ms ease;
+}
+.rail__item:hover,
+.rail__item:focus-visible { opacity: 0.75; }
+.rail__item:hover .rail__label,
+.rail__item:focus-visible .rail__label,
+.rail__item.is-current .rail__label { max-width: 240px; opacity: 1; transform: none; }
+
+.rail__item.is-current { opacity: 1; height: 19px; font-size: 14px; color: var(--paper); }
 
 .backed {
   position: absolute;

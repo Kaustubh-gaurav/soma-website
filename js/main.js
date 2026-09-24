@@ -34,7 +34,11 @@
     var b = document.createElement("button");
     b.type = "button";
     b.className = "rail__item";
-    b.textContent = scene.dataset.label;
+    b.setAttribute("aria-label", scene.dataset.label);
+    var label = document.createElement("span");
+    label.className = "rail__label";
+    label.textContent = scene.dataset.label;
+    b.appendChild(label);
     b.addEventListener("click", function () { go(i); });
     li.appendChild(b);
     railList.appendChild(li);
