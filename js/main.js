@@ -268,11 +268,12 @@
 
   // ---------- Loader ----------
 
-  // The count follows real loading: the fonts, then the opening clip's buffer. It never finishes
-  // faster than LOADER_MIN_MS, so the lines are seen growing, and never waits longer than
-  // LOADER_MAX_MS. The slideshow only starts once the cover fades, so the first clip gets its
-  // full time on screen.
-  var LOADER_MIN_MS = 1600;
+  // The count runs on time, along an ease out curve: quick through the low numbers, slowing into
+  // 100 over LOADER_MS. If the fonts or the opening clip are not ready by then, it eases into the
+  // 90s and creeps on until they are, then glides the rest of the way. It never waits longer
+  // than LOADER_MAX_MS. The slideshow only starts once the cover fades, so the first clip gets
+  // its full time on screen.
+  var LOADER_MS = 2200;
   var LOADER_MAX_MS = 10000;
   var loader = document.getElementById("loader");
   var countEl = document.getElementById("loader-count");
@@ -283,17 +284,11 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fontsDone = true; });
   else fontsDone = true;
 
-  function videoLoaded() {
-    var v = firstVideo;
-    if (!v) return 1;
-    if (v.readyState >= 4) return 1;
-    try {
-      if (v.buffered.length && isFinite(v.duration) && v.duration > 0) {
-        return Math.min(1, v.buffered.end(v.buffered.length - 1) / v.duration);
-      }
-    } catch (e) {}
-    return 0;
+  function assetsReady() {
+    return fontsDone && (!firstVideo || firstVideo.readyState >= 3);
   }
+
+  function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
 
   function begin() {
     startScene(current);
@@ -325,10 +320,18 @@
     (function tick(now) {
       if (finished) return;
       var elapsed = now - t0;
-      var target = elapsed > LOADER_MAX_MS ? 1 : (fontsDone ? 0.25 : 0) + 0.75 * videoLoaded();
-      target = Math.min(target, elapsed / LOADER_MIN_MS);     // never outrun the minimum time
-      shown += (target - shown) * 0.12;                        // ease towards it
-      if (target >= 1 && shown > 0.995) shown = 1;
+      var curve = easeOutCubic(Math.min(1, elapsed / LOADER_MS));
+      var goal;
+      if (assetsReady() || elapsed > LOADER_MAX_MS) {
+        goal = curve;
+      } else {
+        // Still loading: the same curve, topped out at 90, then a slow creep towards 98.
+        var over = Math.max(0, elapsed - LOADER_MS);
+        goal = 0.9 * curve + 0.08 * (1 - Math.exp(-over / 2500));
+      }
+      // Follow the goal closely; the light smoothing only softens the moment loading finishes.
+      shown += (goal - shown) * 0.25;
+      if (goal >= 1 && shown > 0.998) shown = 1;
       loader.style.setProperty("--p", shown.toFixed(4));
       var pct = Math.floor(shown * 100);
       countEl.textContent = pct;
