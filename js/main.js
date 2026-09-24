@@ -9,7 +9,7 @@
   var FORM_ENDPOINT = "";
 
   var FALLBACK_SECONDS = 5.5;   // used if a clip's length cannot be read
-  var SLIDE_MS = 1100;          // keep in step with --slide in style.css
+  var FADE_MS = 450;            // keep in step with --fade in style.css
   var WHEEL_THRESHOLD = 30;     // how much wheel travel counts as one step
   var SWIPE_THRESHOLD = 50;
 
@@ -61,7 +61,23 @@
 
   function warm(i) {
     var v = videoOf(i);
-    if (v && v.preload !== "auto") { v.preload = "auto"; if (v.readyState === 0) v.load(); }
+    if (v && v.preload !== "auto") { v.preload = "auto"; v.load(); }
+  }
+
+  // Once the first clip can play, fetch the rest one at a time, in scene order, so each one is
+  // already buffered by the time its scene comes up and they never compete for bandwidth.
+  function preloadRest() {
+    var queue = scenes.map(function (s, i) { return i; }).filter(function (i) { return videoOf(i) && i !== current; });
+    (function nextInQueue() {
+      var i = queue.shift();
+      if (i === undefined) return;
+      var v = videoOf(i);
+      if (v.readyState >= 4) return nextInQueue();
+      var done = function () { v.removeEventListener("canplaythrough", done); v.removeEventListener("error", done); nextInQueue(); };
+      v.addEventListener("canplaythrough", done);
+      v.addEventListener("error", done);
+      warm(i);
+    })();
   }
 
   function startScene(i) {
@@ -85,7 +101,7 @@
 
   function stopScene(i) {
     var v = videoOf(i);
-    if (v) setTimeout(function () { if (i !== current) v.pause(); }, SLIDE_MS);
+    if (v) setTimeout(function () { if (i !== current) v.pause(); }, FADE_MS);
   }
 
   // ---------- Moving between scenes ----------
@@ -95,30 +111,12 @@
     next = Math.max(0, Math.min(last, next));
     if (next === current || busy) return;
 
-    var forward = next > current;
     var from = scenes[current];
     var to = scenes[next];
-
-    // Park every other scene on the correct side without animating, so a jump never sweeps through them.
-    scenes.forEach(function (s, i) {
-      if (s === from || s === to) return;
-      s.classList.add("no-anim");
-      s.classList.remove("is-active", "is-leaving", "is-above", "is-below");
-      s.classList.add(i < next ? "is-above" : "is-below");
-    });
-
-    // Start the incoming scene just off screen on the side it enters from.
-    to.classList.add("no-anim");
-    to.classList.remove("is-above", "is-below", "is-leaving");
-    to.classList.add(forward ? "is-below" : "is-above");
-    void to.offsetHeight;
-    to.classList.remove("no-anim", "is-below", "is-above");
+    scenes.forEach(function (s) { if (s !== from) s.classList.remove("is-leaving"); });
+    from.classList.remove("is-active");
+    from.classList.add("is-leaving");
     to.classList.add("is-active");
-
-    from.classList.remove("no-anim", "is-active");
-    from.classList.add("is-leaving", forward ? "is-above" : "is-below");
-
-    scenes.forEach(function (s) { if (s !== from && s !== to) s.classList.remove("no-anim"); });
 
     var prev = current;
     current = next;
@@ -130,7 +128,7 @@
     setTimeout(function () {
       from.classList.remove("is-leaving");
       busy = false;
-    }, reduceMotion ? 50 : SLIDE_MS);
+    }, reduceMotion ? 50 : FADE_MS);
   }
 
   function setState() {
@@ -231,15 +229,15 @@
 
   // ?s=3 opens on a given scene, which makes reviewing one screen easier.
   var startAt = parseInt(params.get("s"), 10);
-  scenes.forEach(function (s, i) { if (i > 0) s.classList.add("is-below"); });
   if (startAt > 0 && startAt <= last) {
     scenes[0].classList.remove("is-active");
-    scenes[0].classList.add("is-above");
-    scenes.forEach(function (s, i) { if (i > 0 && i < startAt) { s.classList.remove("is-below"); s.classList.add("is-above"); } });
-    scenes[startAt].classList.remove("is-below");
     scenes[startAt].classList.add("is-active");
     current = startAt;
   }
   setState();
   startScene(current);
+
+  var first = videoOf(current);
+  if (first && first.readyState < 3) first.addEventListener("canplay", preloadRest, { once: true });
+  else preloadRest();
 })();
