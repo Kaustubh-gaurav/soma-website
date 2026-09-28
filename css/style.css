@@ -1,430 +1,439 @@
-/* SOMA. Built from Figma Page 3 (245:806), 1280 x 832 frames.
-   Every measurement below is a design pixel multiplied by --s, so the whole stage scales as one piece. */
+/* SOMA V2. Built from Figma "Page 8" (final screens), 1280 x 832 frames.
+   Screens are drawn on a 1280 x 832 board that is scaled to fit the window (--k) and centred
+   (--ox, --oy). Footage and the frame rules run full bleed. Frame geometry is in design pixels
+   and animates between screens, so the lines slide, grow and retract as sections change. */
 
 @font-face { font-family: "Satoshi"; src: url("../assets/fonts/Satoshi-Regular.woff") format("woff"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Satoshi"; src: url("../assets/fonts/Satoshi-Medium.woff") format("woff"); font-weight: 500; font-display: swap; }
 @font-face { font-family: "Satoshi"; src: url("../assets/fonts/Satoshi-Bold.woff") format("woff"); font-weight: 700; font-display: swap; }
 
-/* Registered so the lines can animate when they close into the box. */
-@property --v1 { syntax: "<length>"; inherits: true; initial-value: 80px; }
-@property --v2 { syntax: "<length>"; inherits: true; initial-value: 1200px; }
-@property --h1 { syntax: "<length>"; inherits: true; initial-value: 80px; }
-@property --fold { syntax: "<length>"; inherits: true; initial-value: 751px; }
-@property --logo-dx { syntax: "<length>"; inherits: true; initial-value: 33px; }
-@property --backed-dx { syntax: "<length>"; inherits: true; initial-value: 32px; }
+/* Frame geometry, in design pixels. Registered so it can animate. */
+@property --v1   { syntax: "<number>"; inherits: true; initial-value: 80; }
+@property --v2   { syntax: "<number>"; inherits: true; initial-value: 1200; }
+@property --h1   { syntax: "<number>"; inherits: true; initial-value: 80; }
+@property --fold { syntax: "<number>"; inherits: true; initial-value: 751; }
+@property --col  { syntax: "<number>"; inherits: true; initial-value: 720; }
+@property --col2 { syntax: "<number>"; inherits: true; initial-value: 960; }
+@property --r1   { syntax: "<number>"; inherits: true; initial-value: 248; }
+@property --r2   { syntax: "<number>"; inherits: true; initial-value: 416; }
+@property --r3   { syntax: "<number>"; inherits: true; initial-value: 583; }
+@property --r4   { syntax: "<number>"; inherits: true; initial-value: 617; }
+@property --col-d  { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --col2-d { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --r1-d { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --r2-d { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --r3-d { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --r4-d { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --rx-d { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --panel-o { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --scrim-o { syntax: "<number>"; inherits: true; initial-value: 1; }
 
 :root {
+  /* SOMA / Color */
   --paper: #F2F1ED;
   --ink: #1D1C19;
+  --text-secondary: #B1B0AD;
+  --text-muted: #9A9996;
   --placeholder: #7F7E7B;
-  --rule: rgb(255 255 255 / 0.4);        /* Figma is 0.55; dimmed so the crosses read clearly */
-  --cross: #FFFFFF;                      /* Figma is paper #F2F1ED; brightened for contrast */
+  --text-disabled: #636260;
+  --rule: rgb(255 255 255 / 0.4);
+  --rule-faint: rgb(255 255 255 / 0.2);
+  --cross: #FFFFFF;
+  --rail-inactive: rgb(236 236 236 / 0.38);
+  --fill-selected: rgb(242 241 237 / 0.1);
+  --fill-panel: rgb(242 241 237 / 0.08);
+  --data-key: #4A4946;
+  --data-value: #2E2D2B;
+  --overlay-label: rgb(0 0 0 / 0.7);
 
   --ease: cubic-bezier(0.76, 0, 0.24, 1);
-  --slide: 900ms;   /* the lines closing into the box */
-  --fade: 450ms;    /* scene crossfade */
+  --slide: 900ms;
+  --fade: 450ms;
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
-body {
-  font-family: "Satoshi", system-ui, sans-serif;
-  color: var(--paper);
-  -webkit-font-smoothing: antialiased;
-}
-button, input { font: inherit; color: inherit; }
+body { font-family: "Satoshi", system-ui, sans-serif; color: var(--paper); -webkit-font-smoothing: antialiased; }
+h1, h2, p, ol { margin: 0; padding: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
 
+/* ---------- Type ramp (SOMA text styles) ---------- */
+.t-display { font-size: 56px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }
+.t-title   { font-size: 32px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }
+.t-logo    { font-size: 24px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }
+.t-b16     { font-size: 16px; line-height: 24px; font-weight: 400; }
+.t-b16m    { font-size: 16px; line-height: 24px; font-weight: 500; }
+.t-b14     { font-size: 14px; line-height: 20px; font-weight: 400; }
+.t-l14     { font-size: 14px; line-height: 20px; font-weight: 500; }
+.t-caps14  { font-size: 14px; line-height: 20px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; }
+.t-caps12  { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; }
+.t-cap12   { font-size: 12px; line-height: 16px; font-weight: 500; }
+.c-sec { color: var(--text-secondary); }
+.c-muted { color: var(--text-muted); }
+.c-dis { color: var(--text-disabled); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; background: var(--paper); color: var(--ink); font-weight: 700; white-space: nowrap; transition: background-color 200ms ease; }
+.btn:hover { background: #fff; }
+.btn--16 { font-size: 16px; line-height: 22px; padding: 16px 24px; }
+.btn--14 { font-size: 14px; line-height: 20px; padding: 10px 16px; }
+.btn--block { width: 100%; border-radius: 4px; }
+.btn.is-disabled { cursor: default; }
+.btn.is-disabled:hover { background: var(--paper); }
+:focus-visible { outline: 1px solid var(--paper); outline-offset: 4px; }
+
+/* ---------- Stage ---------- */
 .stage {
-  /* Scale unit: 1 design pixel. Horizontal geometry follows the width, vertical follows the height. */
-  --sx: calc(100vw / 1280);
-  --sy: calc(100svh / 832);
-  --s: min(var(--sx), var(--sy));
-
-  /* Open frame (Figma MacBook Air 17, 33 to 38): 80 margins both sides, fold at 751. */
-  --h1-open: calc(80 * var(--sy));
-  --fold-open: calc(751 * var(--sy));
-  --v1-open: calc(80 * var(--sx));
-  --v2-open: calc(100vw - 80 * var(--sx));
-  /* Box around the form (Figma MacBook Air 39): 548 wide and centred, h1 at 140, fold at 692. */
-  --h1-box: calc(140 * var(--sy));
-  --fold-box: calc(692 * var(--sy));
-  --v1-box: calc(50vw - 274 * var(--s));
-  --v2-box: calc(50vw + 274 * var(--s));
-
-  --h1: var(--h1-open);
-  --fold: var(--fold-open);
-  --v1: var(--v1-open);
-  --v2: var(--v2-open);
-  --logo-dx: calc(33 * var(--s));     /* logo distance from the left rule */
-  --backed-dx: calc(32 * var(--s));   /* backers distance from the right rule */
-  transition: --v1 var(--slide) var(--ease), --v2 var(--slide) var(--ease),
-              --h1 var(--slide) var(--ease), --fold var(--slide) var(--ease),
-              --logo-dx var(--slide) var(--ease), --backed-dx var(--slide) var(--ease);
-
-  position: fixed;
-  inset: 0;
-  height: 100svh;
-  overflow: hidden;
-  background: #000;
-  touch-action: none;
-}
-.stage.is-boxed {
-  --v1: var(--v1-box); --v2: var(--v2-box);
-  --h1: var(--h1-box); --fold: var(--fold-box);
-  --logo-dx: calc(25 * var(--s));
-  --backed-dx: calc(24 * var(--s));
+  position: fixed; inset: 0; height: 100svh; overflow: hidden; background: #000; touch-action: none;
+  --k: 1; --ox: 0; --oy: 0;
+  --v1: 80; --v2: 1200; --h1: 80; --fold: 751;
+  transition:
+    --v1 var(--slide) var(--ease), --v2 var(--slide) var(--ease), --h1 var(--slide) var(--ease), --fold var(--slide) var(--ease),
+    --col var(--slide) var(--ease), --col2 var(--slide) var(--ease),
+    --r1 var(--slide) var(--ease), --r2 var(--slide) var(--ease), --r3 var(--slide) var(--ease), --r4 var(--slide) var(--ease),
+    --col-d var(--slide) var(--ease), --col2-d var(--slide) var(--ease),
+    --r1-d var(--slide) var(--ease), --r2-d var(--slide) var(--ease), --r3-d var(--slide) var(--ease), --r4-d var(--slide) var(--ease),
+    --rx-d var(--slide) var(--ease), --panel-o var(--slide) ease, --scrim-o var(--fade) ease;
 }
 
-/* ---------- Scenes ---------- */
+/* ---------- Media ---------- */
+.media-layer { position: absolute; inset: 0; z-index: 1; }
+.media, .media-group { position: absolute; inset: 0; opacity: 0; overflow: hidden; background: #000; transition: opacity var(--fade) ease; }
+.media-group > .media { opacity: 1; }
+.media.is-on, .media-group.is-on { opacity: 1; z-index: 2; }
+.media.is-leaving, .media-group.is-leaving { opacity: 1; z-index: 1; }
+.media--tl { inset: 0 50% 50% 0; }
+.media--tr { inset: 0 0 50% 50%; }
+.media--bottom { inset: 50% 0 0 0; }
 
-.scenes { position: absolute; inset: 0; }
-
-/* Layers, bottom to top: leaving clip (1), incoming clip (2), the shared scrim (3), copy (4),
-   lines (5), fixed chrome (6). Scenes deliberately set no z-index, opacity or transform of their
-   own, so every scene's copy can sit above every clip and the one scrim. */
-.scene {
-  position: absolute;
-  inset: 0;
-  visibility: hidden;
-}
-.scene.is-active,
-.scene.is-leaving { visibility: visible; }
-
-/* The incoming clip fades in over the outgoing one, which holds still underneath. */
-.media {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden;
-  opacity: 0;
-  background: #000;
-}
-.scene.is-leaving .media { opacity: 1; }
-.scene.is-active .media { opacity: 1; z-index: 2; transition: opacity var(--fade) ease; }
-
-/* The slow push in is baked into the clips themselves, so the browser only has to play them.
-   Each clip is the full frame. Its Figma crop (--cx, --cy, --cw, --ch, fractions of the clip) is
-   scaled to fit the screen whole, then the clip is grown until it covers the screen and centred on
-   the crop. A wide window shows more footage at the sides instead of cutting the crop's top and
-   bottom off. With no crop set, this is plain cover. */
-.media {
-  --cx: 0; --cy: 0; --cw: 1; --ch: 1;
-  --ar: 1.7778;
-  --vw: 100vw;
-  --vh: 100svh;
-  --W: max(min(calc(var(--vw) / var(--cw)), calc(var(--vh) * var(--ar) / var(--ch))), var(--vw), calc(var(--vh) * var(--ar)));
-}
+/* Each clip keeps its Figma crop whole and covers its box (see V1 notes). */
+.media { --cx: 0; --cy: 0; --cw: 1; --ch: 1; --ar: 1.7778; container-type: size; }
 .media video {
-  position: absolute;
-  width: var(--W);
-  height: calc(var(--W) / var(--ar));
+  --vw: 100cqw; --vh: 100cqh;
+  --W: max(min(calc(var(--vw) / var(--cw)), calc(var(--vh) * var(--ar) / var(--ch))), var(--vw), calc(var(--vh) * var(--ar)));
+  position: absolute; width: var(--W); height: calc(var(--W) / var(--ar)); max-width: none; display: block; object-fit: cover;
   left: clamp(calc(var(--vw) - var(--W)), calc(var(--vw) / 2 - var(--W) * (var(--cx) + var(--cw) / 2)), 0px);
   top: clamp(calc(var(--vh) - var(--W) / var(--ar)), calc(var(--vh) / 2 - var(--W) / var(--ar) * (var(--cy) + var(--ch) / 2)), 0px);
-  max-width: none;
-  object-fit: cover;
-  display: block;
 }
+.spec-vid { opacity: 0; transition: opacity 300ms ease; }
+.spec-vid.is-shown { opacity: 1; }
 
-/* Figma plate: black at 40%, then a black gradient from clear at the top to 60% at the bottom. */
-.scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  background:
-    linear-gradient(180deg, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 0.6) 100%),
-    rgb(0 0 0 / 0.4);
-  pointer-events: none;
-}
+.scrim { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: var(--scrim-o);
+  background: linear-gradient(180deg, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 0.6) 100%), rgb(0 0 0 / 0.4); }
 
-.copy {
-  position: absolute;
-  z-index: 4;
-  left: calc(var(--v1) + 25 * var(--s));
-  bottom: calc(100svh - var(--fold) + 24 * var(--s));
-  width: calc(785 * var(--s));
-  max-width: calc(var(--v2) - var(--v1) - 50 * var(--s));
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: calc(32 * var(--s));
-}
+/* Geometry helpers: design px to screen px */
+.frame, .panel, .loader { --X-v1: calc(var(--ox) * 1px + var(--k) * var(--v1) * 1px); }
 
-/* Copy fades with its scene. */
-.copy,
-.box { opacity: 0; transition: opacity var(--fade) ease; }
-.scene.is-active .copy,
-.scene.is-active .box { opacity: 1; }
+.panel { position: absolute; z-index: 4; pointer-events: none; background: var(--fill-panel); opacity: var(--panel-o);
+  left: calc(var(--ox) * 1px + var(--k) * (var(--col) + 1) * 1px);
+  top: calc(var(--oy) * 1px + var(--k) * (var(--h1) + 1) * 1px);
+  width: calc(var(--k) * (var(--v2) - var(--col) - 1) * 1px);
+  height: calc(var(--k) * (var(--fold) - var(--h1) - 1) * 1px); }
 
-.display {
-  margin: 0;
-  font-weight: 500;
-  font-size: max(30px, calc(56 * var(--s)));
-  line-height: 1;
-  letter-spacing: -1.5px;
-  color: var(--paper);
-}
+/* ---------- Board ---------- */
+.board { position: absolute; left: 0; top: 0; width: 1280px; height: 832px; z-index: 5; transform-origin: 0 0;
+  transform: translate(calc(var(--ox) * 1px), calc(var(--oy) * 1px)) scale(var(--k)); }
+.scene { position: absolute; inset: 0; visibility: hidden; opacity: 0; transition: opacity var(--fade) ease, visibility 0s linear var(--fade); pointer-events: none; }
+.scene.is-active { visibility: visible; opacity: 1; transition: opacity var(--fade) ease; pointer-events: auto; }
+.scene.is-leaving { visibility: visible; }
+.head { position: absolute; display: flex; flex-direction: column; align-items: flex-start; }
+.band { position: absolute; top: 784px; display: flex; align-items: center; gap: 32px; }
 
-.btn {
-  border: 0;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: max(14px, calc(16 * var(--s)));
-  line-height: 1.375;
-  padding: calc(16 * var(--s)) calc(24 * var(--s));
-  transition: background-color 200ms ease, transform 200ms ease;
-}
-.btn--light { background: var(--paper); color: var(--ink); }
-.btn--light:hover { background: #fff; }
-.btn--light:active { transform: translateY(1px); }
-.btn--block { width: 100%; border-radius: 4px; }
-.btn:focus-visible, .rail__item:focus-visible, .logo:focus-visible, .field input:focus-visible {
-  outline: 1px solid var(--paper);
-  outline-offset: 4px;
-}
+/* Chrome */
+.logo { position: absolute; top: 28px; left: calc(var(--v1) * 1px + 25px); color: var(--paper); text-decoration: none; transition: left var(--slide) var(--ease); }
+.nav { position: absolute; top: 21px; right: calc(1280px - var(--v2) * 1px + 27px); display: flex; align-items: center; gap: 32px; }
+.nav__link { color: var(--text-secondary); transition: color 200ms ease; }
+button.nav__link:hover { color: var(--paper); }
+.nav__link.is-disabled { cursor: default; }
 
-/* ---------- Last scene: the box and the form ---------- */
+.rail { position: absolute; left: 81px; top: 105px; transition: opacity 400ms ease 200ms; }
+.stage.no-rail .rail { opacity: 0; pointer-events: none; transition-delay: 0ms; }
+.rail__list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.rail__item { display: flex; align-items: center; gap: 12px; height: 16px; color: var(--paper); }
+.rail__item::before { content: ""; width: 4px; height: 1px; background: var(--rail-inactive); flex: none; transition: width 250ms ease, background-color 250ms ease; }
+.rail__label { max-width: 0; overflow: hidden; opacity: 0; white-space: nowrap; transition: max-width 300ms ease, opacity 200ms ease; }
+.rail__item:hover .rail__label { max-width: 240px; opacity: 0.6; }
+.rail__item.is-current::before { width: 8px; background: var(--paper); }
+.rail__item.is-current .rail__label { max-width: 240px; opacity: 1; }
 
-.box {
-  z-index: 4;
-  position: absolute;
-  left: calc(var(--v1) + 1px);
-  width: calc(var(--v2) - var(--v1) - 1px);
-  top: calc(var(--h1) + 1px);
-  height: calc(var(--fold) - var(--h1) - 1px);
-  padding: calc(24 * var(--s));
-  display: flex;
-  flex-direction: column;
-  gap: calc(32 * var(--s));
-  overflow: auto;
-}
-.box .display { font-size: max(28px, calc(56 * var(--s))); }
+.backed { position: absolute; left: 113px; top: 772px; width: 1055px; height: 40px; display: flex; align-items: center; justify-content: space-between; opacity: 0; pointer-events: none; transition: opacity var(--fade) ease; }
+.stage.show-backed .backed { opacity: 1; }
+.backed__group { display: flex; align-items: center; gap: 32px; }
+.backed__logos { display: flex; align-items: center; gap: 24px; }
+.backed__logos img { display: block; object-fit: contain; }
 
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: calc(24 * var(--s));
-}
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: calc(12 * var(--s));
-  padding-bottom: calc(8 * var(--s));
-  border-bottom: 1px solid var(--paper);
-}
-.field__label {
-  font-weight: 500;
-  font-size: max(11px, calc(12 * var(--s)));
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--paper);
-}
-.field input {
-  background: transparent;
-  border: 0;
-  padding: 0;
-  font-weight: 400;
-  font-size: max(15px, calc(16 * var(--s)));
-  line-height: 1.375;
-  color: var(--paper);
-}
-.field input::placeholder { color: var(--placeholder); opacity: 1; }
-.field input:focus { outline: none; }
-.field:focus-within { box-shadow: 0 1px 0 var(--paper); }
-.field.is-invalid { border-bottom-color: #E0785A; }
-.form__status { margin: 0; min-height: 1em; font-size: max(13px, calc(14 * var(--s))); color: var(--paper); }
-.form__status:empty { display: none; }
-
-/* ---------- Fixed chrome: lines, crosses, logo, rail, backers ---------- */
-
-.frame { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
-
-/* Hairlines are snapped to whole screen pixels. With display scaling (Windows at 125%, for
-   example) a 1px line at a scaled position would otherwise straddle two screen pixels and look
-   thicker and brighter than its neighbours. --snap is one screen pixel and --hair one screen
-   pixel at the nearest whole count; main.js sets both from devicePixelRatio. */
-.stage { --snap: 1px; --hair: 1px; }
+/* ---------- Frame ---------- */
+.frame { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
 .rule { position: absolute; background: var(--rule); }
-.rule--v1, .rule--v2 { top: 0; bottom: 0; width: var(--hair); }
-.rule--v1 { left: round(var(--v1), var(--snap)); }
-.rule--v2 { left: round(var(--v2), var(--snap)); }
-.rule--h1, .rule--fold { left: 0; right: 0; height: var(--hair); }
-.rule--h1 { top: round(var(--h1), var(--snap)); }
-.rule--fold { top: round(var(--fold), var(--snap)); }
+.rule--v1, .rule--v2 { top: 0; bottom: 0; width: 1px; }
+.rule--v1 { left: calc(var(--ox) * 1px + var(--k) * var(--v1) * 1px); }
+.rule--v2 { left: calc(var(--ox) * 1px + var(--k) * var(--v2) * 1px); }
+.rule--h1, .rule--fold { left: 0; right: 0; height: 1px; }
+.rule--h1 { top: calc(var(--oy) * 1px + var(--k) * var(--h1) * 1px); }
+.rule--fold { top: calc(var(--oy) * 1px + var(--k) * var(--fold) * 1px); }
+.rule--col, .rule--col2 { width: 1px; top: calc(var(--oy) * 1px + var(--k) * var(--h1) * 1px); height: calc(var(--k) * (var(--fold) - var(--h1)) * 1px); transform-origin: 50% 0; }
+.rule--col { left: calc(var(--ox) * 1px + var(--k) * var(--col) * 1px); transform: scaleY(var(--col-d)); }
+.rule--col2 { left: calc(var(--ox) * 1px + var(--k) * var(--col2) * 1px); transform: scaleY(var(--col2-d)); background: var(--rule-faint); }
+.rule--r { height: 1px; left: calc(var(--ox) * 1px + var(--k) * var(--col) * 1px); width: calc(var(--k) * (var(--v2) - var(--col)) * 1px); transform-origin: 100% 50%; }
+.rule--r1 { top: calc(var(--oy) * 1px + var(--k) * var(--r1) * 1px); transform: scaleX(var(--r1-d)); }
+.rule--r2 { top: calc(var(--oy) * 1px + var(--k) * var(--r2) * 1px); transform: scaleX(var(--r2-d)); }
+.rule--r3 { top: calc(var(--oy) * 1px + var(--k) * var(--r3) * 1px); transform: scaleX(var(--r3-d)); }
+.rule--r4 { top: calc(var(--oy) * 1px + var(--k) * var(--r4) * 1px); transform: scaleX(var(--r4-d)); }
 
-/* A cross is two 17px arms centred on the point where two rules meet. */
 .cross { position: absolute; width: 0; height: 0; }
 .cross::before, .cross::after { content: ""; position: absolute; background: var(--cross); }
-.cross::before { left: round(-8px, var(--snap)); width: 17px; top: 0; height: var(--hair); }
-.cross::after { top: round(-8px, var(--snap)); height: 17px; left: 0; width: var(--hair); }
-.cross--tl { left: round(var(--v1), var(--snap)); top: round(var(--h1), var(--snap)); }
-.cross--tr { left: round(var(--v2), var(--snap)); top: round(var(--h1), var(--snap)); }
-.cross--bl { left: round(var(--v1), var(--snap)); top: round(var(--fold), var(--snap)); }
-.cross--br { left: round(var(--v2), var(--snap)); top: round(var(--fold), var(--snap)); }
+.cross::before { left: -8px; width: 17px; top: 0; height: 1px; }
+.cross::after { top: -8px; height: 17px; left: 0; width: 1px; }
+.cross--tl, .cross--bl { left: calc(var(--ox) * 1px + var(--k) * var(--v1) * 1px); }
+.cross--tr, .cross--br { left: calc(var(--ox) * 1px + var(--k) * var(--v2) * 1px); }
+.cross--tl, .cross--tr { top: calc(var(--oy) * 1px + var(--k) * var(--h1) * 1px); }
+.cross--bl, .cross--br { top: calc(var(--oy) * 1px + var(--k) * var(--fold) * 1px); }
+.cross--ct, .cross--cb { left: calc(var(--ox) * 1px + var(--k) * var(--col) * 1px); opacity: var(--col-d); }
+.cross--ct { top: calc(var(--oy) * 1px + var(--k) * var(--h1) * 1px); }
+.cross--cb { top: calc(var(--oy) * 1px + var(--k) * var(--fold) * 1px); }
+.cross--rx { left: calc(var(--ox) * 1px + var(--k) * var(--v2) * 1px); opacity: var(--rx-d); }
+.cross--r1 { top: calc(var(--oy) * 1px + var(--k) * var(--r1) * 1px); }
+.cross--r2 { top: calc(var(--oy) * 1px + var(--k) * var(--r2) * 1px); }
+.cross--r3 { top: calc(var(--oy) * 1px + var(--k) * var(--r3) * 1px); }
 
-.logo {
-  position: absolute;
-  z-index: 6;
-  left: calc(var(--v1) + var(--logo-dx));
-  top: calc(28 * var(--sy));
-  font-weight: 500;
-  font-size: max(20px, calc(24 * var(--s)));
-  line-height: 1;
-  letter-spacing: -1.5px;
-  color: #fff;
-  text-decoration: none;
-}
+/* ---------- 02 Specimen ---------- */
+.spec-time { position: absolute; right: 104px; top: 105px; text-align: right; display: flex; flex-direction: column; gap: 4px; }
+.toggles { position: absolute; left: 105px; top: 703px; display: flex; gap: 32px; align-items: flex-start; }
+.toggle { position: relative; display: flex; flex-direction: column; gap: 4px; color: var(--text-secondary); font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; transition: color 200ms ease; text-align: left; }
+.toggle:hover { color: var(--paper); }
+.toggle.is-active { color: var(--paper); font-size: 14px; line-height: 20px; }
+.toggle__bar { display: block; height: 1px; width: 100%; background: transparent; overflow: hidden; }
+.toggle__bar i { display: block; height: 100%; width: 100%; background: var(--paper); transform: scaleX(0); transform-origin: 0 50%; }
+.toggle.is-active .toggle__bar i { transform: scaleX(var(--progress, 0)); }
+.band .metrics { display: flex; gap: 32px; margin-left: auto; }
+.metrics > span { display: inline-flex; align-items: baseline; gap: 8px; }
+.metrics b { font-weight: 500; }
+.metrics i { font-style: normal; }
+.scene--specimen .band { justify-content: space-between; }
 
-.rail {
-  position: absolute;
-  z-index: 6;
-  left: var(--v1);
-  top: calc(var(--h1) + 25 * var(--sy) - 8px);   /* less the first row's top padding */
-  opacity: 1;
-  transition: opacity 500ms ease 300ms;
-}
-/* Home shows the ticks with nothing selected; only the form screen hides the rail. */
-.stage.is-boxed .rail { opacity: 0; pointer-events: none; transition-delay: 0ms; }
+.spec-layer { position: absolute; inset: 0; opacity: 0; transition: opacity 350ms ease; pointer-events: none; }
+.spec-layer.is-on { opacity: 1; }
+.anatomy-shape { position: absolute; left: 470px; top: 330px; width: 360px; height: 170px; overflow: visible; }
+.anatomy-shape ellipse { fill: rgb(242 241 237 / 0.06); stroke: var(--paper); stroke-width: 1; stroke-dasharray: 5 4; }
+.tag { position: absolute; padding: 3px 6px; background: var(--overlay-label); color: var(--paper); white-space: nowrap; }
+.spec-layer--phase { left: 105px; top: 580px; right: auto; bottom: auto; width: 270px; }
+.spec-layer--phase .t-b16m { margin-top: 4px; }
+.phase-track { position: relative; height: 3px; margin-top: 4px; }
+.phase-track::before { content: ""; position: absolute; left: 0; right: 0; top: 1px; height: 1px; background: rgb(242 241 237 / 0.4); }
+.phase-track i { position: absolute; left: 0; top: 0; width: 40px; height: 3px; background: var(--paper); transform: translateX(var(--seg, 0px)); transition: transform 600ms var(--ease); }
+.spec-layer--transcript { left: 0; right: 0; top: 590px; bottom: auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
-/* Every video section is listed; the current one is highlighted. */
-.rail__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
+/* ---------- 04 Hear ---------- */
+.transcript { position: absolute; right: 80px; top: 105px; list-style: none; display: flex; flex-direction: column; gap: 16px; align-items: flex-end; }
+.transcript li { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding-right: 20px; color: var(--placeholder); transition: color 300ms ease; }
+.transcript .line { font-size: 16px; line-height: 22px; font-weight: 400; letter-spacing: -0.5px; }
+.transcript .tick { position: absolute; right: 0; top: 7px; width: 8px; height: 1px; background: var(--rail-inactive); transition: background-color 300ms ease; }
+.transcript li.is-past { color: var(--text-disabled); }
+.transcript li.is-active { color: var(--paper); }
+.transcript li.is-active .line { font-weight: 500; }
+.transcript li.is-active .tick { background: var(--paper); }
 
+.wave { position: absolute; left: 97px; top: 770px; width: 1088px; }
+.wave__speakers { display: flex; }
+.wave__speakers span { flex: none; }
+.wave__bars { height: 26px; margin-top: 2px; display: flex; align-items: center; gap: 3px; }
+.wave__bars i { flex: none; width: 2px; background: var(--text-disabled); }
+.wave__bars i.is-played { background: var(--paper); }
+.playhead { position: absolute; top: 752px; left: 97px; width: 1px; height: 80px; background: var(--paper); transform: translateX(var(--ph, 0px)); }
+.playhead__time { position: absolute; left: 6px; top: 0; padding: 3px 6px; background: var(--paper); color: var(--ink); white-space: nowrap; }
 
-.rail__item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  height: 32px;
-  /* Each row is 16 tall with a 16 gap (Figma). The gap is folded into the button as
-     padding, so hovering anywhere between two ticks still lands on one of them. */
-  padding: 8px 8px 8px 0;
-  background: none;
-  border: 0;
-  cursor: pointer;
-  color: #ECECEC;
-  opacity: 0.38;
-  font-weight: 400;
-  font-size: 12px;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: opacity 250ms ease;
-}
-.rail__item::before { content: ""; width: 8px; height: 1px; background: currentColor; flex: none; }
+/* ---------- 05 Understand ---------- */
+.phase-box { position: absolute; left: 905px; top: 105px; width: 270px; }
+.phase-track--wide { margin-top: 4px; }
+.steps { top: 782px; gap: 32px; }
+.steps span { color: var(--text-disabled); transition: color 300ms ease; }
+.steps span.is-done { color: var(--text-secondary); }
+.steps span.is-active { color: var(--paper); }
 
-/* Only the current section shows its name. The others are just ticks, and hovering one
-   previews its name (Figma MacBook Air 33). */
-.rail__label {
-  display: inline-block;
-  max-width: 0;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: max-width 300ms ease, opacity 200ms ease, transform 250ms ease;
-}
-.rail__item:hover,
-.rail__item:focus-visible { opacity: 0.75; }
-.rail__item:hover .rail__label,
-.rail__item:focus-visible .rail__label,
-.rail__item.is-current .rail__label { max-width: 240px; opacity: 1; transform: none; }
+/* ---------- 06 and 07 rows ---------- */
+.rows { position: absolute; top: 81px; width: calc(1200px - var(--col) * 1px); left: calc(var(--col) * 1px); display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex: none; }
+.row:nth-child(odd) { height: 167px; }
+.row:nth-child(even) { height: 168px; }
+.row > .t-b16 { width: 315px; }
+.detail { width: 315px; display: flex; flex-direction: column; gap: 16px; }
 
-.rail__item.is-current { opacity: 1; height: 35px; font-size: 14px; color: var(--paper); }
+/* ---------- 08 Delivery ---------- */
+.tree { position: absolute; left: 721px; top: 105px; width: 239px; }
+.tree__head { padding-left: 24px; }
+.tree__rows { margin-top: 16px; display: flex; flex-direction: column; }
+.file { display: flex; align-items: center; height: 28px; padding-left: 44px; font-size: 14px; line-height: 20px; color: var(--text-secondary); text-align: left; position: relative; transition: background-color 150ms ease, color 150ms ease; }
+.file.is-folder, .file.is-root { padding-left: 24px; }
+.file.is-folder { color: var(--paper); }
+.file.gap { margin-top: 4px; }
+.file::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: transparent; }
+.file.is-selected, .file:hover { background: var(--fill-selected); color: var(--paper); }
+.file.is-selected::before, .file:hover::before { background: var(--paper); }
+.tree:hover .file.is-selected:not(:hover) { background: transparent; color: var(--text-secondary); }
+.tree:hover .file.is-selected:not(:hover)::before { background: transparent; }
+.tree:hover .file.is-folder.is-selected:not(:hover) { color: var(--paper); }
+.preview { position: absolute; left: 985px; top: 105px; width: 195px; }
+.preview__body { margin-top: 24px; display: flex; flex-direction: column; gap: 20px; }
+.preview__body .line { display: flex; gap: 16px; }
+.preview__body .k { height: 8px; background: var(--data-key); }
+.preview__body .v { height: 8px; background: var(--data-value); }
+.preview__thumb { width: 195px; aspect-ratio: 16 / 9; object-fit: cover; display: block; }
+.preview__wave { display: flex; align-items: center; gap: 2px; height: 60px; }
+.preview__wave i { width: 2px; background: var(--text-secondary); }
+.scene--delivery .band { gap: 32px; }
 
-.backed {
-  position: absolute;
-  z-index: 6;
-  right: calc(100vw - var(--v2) + var(--backed-dx));
-  top: calc(768 * var(--sy));
-  display: flex;
-  align-items: center;
-  gap: calc(24 * var(--s));
-}
-.backed__label { font-weight: 500; font-size: max(11px, calc(14 * var(--s))); line-height: 1; color: #fff; opacity: 0.4; }
-.backed__apollo { height: calc(40 * var(--s)); width: auto; margin-right: calc(-8 * var(--s)); }
-.backed__morepen { height: calc(40 * var(--s)); width: auto; }
+/* ---------- 09 Custom ---------- */
+.stages { position: absolute; left: 747px; top: 81px; width: 453px; }
+.stage-row { height: 134px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; gap: 8px; }
+.stage-row > .t-b16 { width: 168px; text-align: right; }
+
+/* ---------- 11 Hospitals ---------- */
+.hospital-art { position: absolute; left: 753px; top: 108px; width: 415px; height: 616px; object-fit: cover; }
+
+/* ---------- 12 Request ---------- */
+.form { position: absolute; left: 265px; top: 122px; width: 750px; display: flex; flex-direction: column; gap: 24px; }
+.form__row { display: flex; gap: 24px; }
+.form__row > .field { flex: 1 1 0; }
+.field { display: flex; flex-direction: column; gap: 8px; border: 0; margin: 0; padding: 0; min-width: 0; }
+.field--half { width: 363px; }
+.field__label-row { display: flex; justify-content: space-between; }
+.field__input { position: relative; display: block; border-bottom: 1px solid var(--paper); padding-bottom: 4px; }
+.field input, .field select { width: 100%; background: transparent; border: 0; padding: 0; outline: none; font-size: 16px; line-height: 24px; color: var(--paper); appearance: none; -webkit-appearance: none; border-radius: 0; }
+.field input::placeholder { color: var(--placeholder); opacity: 1; }
+.field select { cursor: pointer; padding-right: 24px; }
+.field select:invalid { color: var(--placeholder); }
+.field select option { color: #000; }
+.field--select .field__input::after { content: ""; position: absolute; right: 2px; top: 8px; width: 8px; height: 8px; border-right: 1.3px solid var(--paper); border-bottom: 1.3px solid var(--paper); transform: rotate(45deg); pointer-events: none; }
+.field.is-invalid .field__input { border-bottom-color: #E0785A; }
+.field legend { padding: 0; margin-bottom: 8px; }
+.options { display: flex; gap: 8px; flex-wrap: wrap; }
+.option { position: relative; cursor: pointer; }
+.option input { position: absolute; opacity: 0; pointer-events: none; }
+.option span { display: inline-flex; align-items: center; height: 36px; padding: 0 12px; border: 1px solid rgb(242 241 237 / 0.5); border-radius: 4px; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--text-secondary); transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease; }
+.option:hover span { border-color: var(--paper); color: var(--paper); }
+.option input:checked + span { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.option input:focus-visible + span { outline: 1px solid var(--paper); outline-offset: 3px; }
+.form__status { min-height: 0; color: var(--text-secondary); }
+.form__status:empty { display: none; }
+.form-done { position: absolute; left: 265px; top: 113px; }
+
+/* ---------- 13 Footer ---------- */
+.footer-brand { position: absolute; left: 105px; top: 537px; }
+.footer-links { position: absolute; right: 105px; top: 537px; display: flex; gap: 32px; }
+.footer-links button { color: var(--text-secondary); }
+.footer-links button:hover { color: var(--paper); }
+.footer-links [aria-disabled] { cursor: default; }
 
 /* ---------- Loader ---------- */
-
-/* Black cover with the four crosses in place. Each rule is drawn as four segments that grow away
-   from the crosses as --p goes from 0 to 1: one out to each screen edge, and two that meet in
-   the middle. At 1 they sit exactly on the site's own rules, so fading the cover reveals the page
-   with nothing moving. */
-.loader {
-  --p: 0;
-  --X1: round(var(--v1), var(--snap));
-  --X2: round(var(--v2), var(--snap));
-  --Y1: round(var(--h1), var(--snap));
-  --Y2: round(var(--fold), var(--snap));
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  background: #000;
-  transition: opacity 700ms ease, visibility 0s linear 700ms;
-}
+.loader { position: absolute; inset: 0; z-index: 10; background: #000; --p: 0; transition: opacity 700ms ease, visibility 0s linear 700ms;
+  --lv1: 80; --lv2: 1200; --lh1: 80; --lfold: 751; }
 .loader.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
-
+.loader .cross--tl, .loader .cross--bl { left: calc(var(--ox) * 1px + var(--k) * 80px); }
+.loader .cross--tr, .loader .cross--br { left: calc(var(--ox) * 1px + var(--k) * 1200px); }
+.loader .cross--tl, .loader .cross--tr { top: calc(var(--oy) * 1px + var(--k) * 80px); }
+.loader .cross--bl, .loader .cross--br { top: calc(var(--oy) * 1px + var(--k) * 751px); }
 .seg { position: absolute; background: var(--rule); will-change: transform; }
-.seg--h { height: var(--hair); transform: scaleX(var(--p)); }
-.seg--v { width: var(--hair); transform: scaleY(var(--p)); }
-.seg--h1 { top: var(--Y1); }
-.seg--fold { top: var(--Y2); }
-.seg--v1 { left: var(--X1); }
-.seg--v2 { left: var(--X2); }
+.seg--h { height: 1px; transform: scaleX(var(--p)); }
+.seg--v { width: 1px; transform: scaleY(var(--p)); }
+.loader__count { position: absolute; left: calc(var(--ox) * 1px + var(--k) * 105px); top: calc(var(--oy) * 1px + var(--k) * 671px); font-size: calc(56px * var(--k)); letter-spacing: calc(-1.5px * var(--k)); font-variant-numeric: tabular-nums; }
 
-.seg--out-l { left: 0; width: var(--X1); transform-origin: 100% 50%; }
-.seg--in-l { left: var(--X1); width: calc((var(--X2) - var(--X1)) / 2); transform-origin: 0 50%; }
-.seg--in-r { left: calc((var(--X1) + var(--X2)) / 2); width: calc((var(--X2) - var(--X1)) / 2); transform-origin: 100% 50%; }
-.seg--out-r { left: var(--X2); right: 0; transform-origin: 0 50%; }
+/* ?still: no transitions, for screenshots */
+.stage.no-anim, .stage.no-anim * { transition: none !important; }
 
-.seg--out-t { top: 0; height: var(--Y1); transform-origin: 50% 100%; }
-.seg--in-t { top: var(--Y1); height: calc((var(--Y2) - var(--Y1)) / 2); transform-origin: 50% 0; }
-.seg--in-b { top: calc((var(--Y1) + var(--Y2)) / 2); height: calc((var(--Y2) - var(--Y1)) / 2); transform-origin: 50% 100%; }
-.seg--out-b { top: var(--Y2); bottom: 0; transform-origin: 50% 0; }
-
-/* The count sits where every headline sits. */
-.loader__count {
-  position: absolute;
-  left: calc(var(--v1) + 25 * var(--s));
-  bottom: calc(100svh - var(--fold) + 24 * var(--s));
-  font-weight: 500;
-  font-size: max(30px, calc(56 * var(--s)));
-  line-height: 1;
-  letter-spacing: -1.5px;
-  font-variant-numeric: tabular-nums;
-  color: var(--paper);
-}
-
-/* ---------- Small screens: the lines hug the edges and the copy gets room ---------- */
-
-@media (max-width: 760px) {
-  .stage {
-    --s: calc(100vw / 390);
-    --v1-open: 20px;
-    --v2-open: calc(100vw - 20px);
-    --v1-box: 20px;
-    --v2-box: calc(100vw - 20px);
-    --h1-open: 64px;
-    --h1-box: 64px;
-    --fold-open: calc(100svh - 96px);
-    --fold-box: calc(100svh - 96px);
-  }
-  .logo { left: calc(var(--v1) + 16px); top: 22px; font-size: 20px; }
-  .rail { top: calc(var(--h1) + 12px); }
-  .copy { left: calc(var(--v1) + 16px); width: calc(var(--v2) - var(--v1) - 32px); max-width: none; bottom: calc(100svh - var(--fold) + 24px); gap: 20px; }
-  .display, .box .display { font-size: 32px; letter-spacing: -1px; }
-  .loader__count { left: calc(var(--v1) + 16px); bottom: calc(100svh - var(--fold) + 24px); font-size: 32px; letter-spacing: -1px; }
-  .backed { right: auto; left: calc(var(--v1) + 16px); top: calc(var(--fold) + 28px); gap: 14px; }
-  .backed__label { font-size: 11px; }
-  .backed__apollo, .backed__morepen { height: 32px; }
-  .box { padding: 16px; gap: 20px; }
-  .form { gap: 18px; }
-  .field { gap: 8px; }
-}
-
+/* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .stage, .rail, .loader { transition-duration: 1ms !important; }
-  .media, .copy, .box { transition: none !important; }
+  .stage { transition-duration: 1ms !important; }
+  .scene, .media, .media-group, .rail, .loader { transition-duration: 1ms !important; }
+}
+
+/* ======================================================================
+   Phones. Page 8 has no phone frames, so this follows the V1 phone layout:
+   rules at 20 from each edge, top rule at 64, fold 96 above the bottom,
+   headlines at 32, one idea per screen. The board stops scaling (k = 1)
+   and takes the viewport size; JS sets the phone geometry in pixels.
+   ====================================================================== */
+@media (max-width: 760px) {
+  .board { width: 100vw; height: 100svh; transform: none; }
+  .t-display { font-size: 32px; letter-spacing: -1px; }
+  .t-title { font-size: 22px; letter-spacing: -0.8px; }
+  .head { left: 36px !important; top: auto !important; bottom: 120px; width: calc(100vw - 72px); }
+  .head > * { width: 100% !important; }
+  .head .btn { width: auto !important; margin-top: 20px !important; }
+  .head p { margin-top: 16px !important; font-size: 15px; line-height: 22px; }
+  .logo { top: 22px; left: 36px; font-size: 20px; }
+  .nav { top: 16px; right: 36px; gap: 0; }
+  .nav .nav__link { display: none; }
+  .btn--14 { font-size: 13px; padding: 8px 12px; }
+  .rail { left: 20px; top: 76px; }
+  /* Phones show the rail as ticks only; the section names would sit on the content. */
+  .rail__item .rail__label, .rail__item:hover .rail__label, .rail__item.is-current .rail__label { max-width: 0; opacity: 0; }
+  .scene--delivery .band > .c-muted { display: none; }
+  .scene--delivery .band { gap: 14px; }
+  .backed { left: 36px; top: auto; bottom: 24px; width: calc(100vw - 72px); height: 32px; }
+  .backed > .t-b16m { display: none; }
+  .backed__group { gap: 16px; }
+  .backed__logos img:first-child { width: 88px; height: 18px; }
+  .backed__logos img:last-child { width: 96px; height: 30px; }
+  .band { left: 36px !important; width: calc(100vw - 72px) !important; top: auto; bottom: 40px; flex-wrap: wrap; row-gap: 6px; gap: 16px; }
+
+  /* 02 */
+  .spec-time { right: 36px; top: 76px; }
+  .toggles { left: 36px; top: auto; bottom: 120px; width: calc(100vw - 56px); overflow-x: auto; gap: 22px; padding-bottom: 4px; scrollbar-width: none; }
+  .toggles::-webkit-scrollbar { display: none; }
+  .toggle { flex: none; }
+  .scene--specimen .band .metrics { display: none; }
+  .anatomy-shape { left: 50%; top: 38%; width: 240px; height: 120px; transform: translateX(-50%); }
+  .spec-layer--anatomy .tag { left: 36px !important; top: calc(38% - 28px) !important; }
+  .spec-layer--phase { left: 36px; top: auto; bottom: 170px; }
+  .spec-layer--transcript { top: auto; bottom: 170px; }
+
+  /* 03 */
+  .media--tl { inset: 0 0 66.66% 0; }
+  .media--tr { inset: 33.33% 0 33.33% 0; }
+  .media--bottom { inset: 66.66% 0 0 0; }
+
+  /* 04 */
+  .transcript { right: 20px; top: 76px; gap: 12px; }
+  .transcript li:nth-child(n+4) { display: none; }
+  .wave { left: 20px; top: auto; bottom: 24px; width: calc(100vw - 40px); }
+  .wave__speakers { display: none; }
+  .playhead { display: none; }
+
+  /* 05 */
+  .phase-box { left: auto; right: 36px; top: 76px; width: 190px; }
+  .steps span { display: none; }
+  .steps span.is-active { display: inline; }
+
+  /* 06, 07 */
+  .rows { left: 20px; top: 65px; width: calc(100vw - 40px); height: calc(100svh - 161px); }
+  .row { flex: 1 1 0; height: auto !important; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; padding: 0 16px 0 44px; }
+  .row > .t-b16, .detail { width: auto; font-size: 14px; line-height: 20px; }
+  .detail { gap: 6px; }
+  .detail .t-b16 { font-size: 13px; line-height: 18px; }
+
+  /* 08 */
+  .tree { left: 36px; top: 84px; width: calc(100vw - 72px); }
+  .preview { display: none; }
+
+  /* 09 */
+  .stages { left: 20px; top: 65px; width: calc(100vw - 40px); }
+  .stage-row { height: 56px; padding: 0 16px 0 44px; }
+  .stage-row > .t-b16 { width: auto; font-size: 13px; line-height: 18px; max-width: 45%; }
+
+  /* 11 */
+  .hospital-art { left: 50%; top: 76px; width: auto; height: 36svh; transform: translateX(-50%); }
+
+  /* 12 */
+  .form { left: 36px; top: 84px; width: calc(100vw - 72px); max-height: calc(100svh - 120px); overflow-y: auto; gap: 18px; padding-bottom: 24px; }
+  .form__row { flex-direction: column; gap: 18px; }
+  .field--half { width: 100%; }
+  .form__head p { width: auto !important; font-size: 15px; line-height: 22px; }
+  .form-done { left: 36px; top: 96px; width: calc(100vw - 72px); }
+  .form-done p { width: auto !important; }
+
+  /* 13 */
+  .footer-brand { left: 36px; top: auto; bottom: 200px; }
+  .footer-links { left: 36px; right: auto; top: auto; bottom: 120px; flex-wrap: wrap; gap: 12px 24px; width: calc(100vw - 72px); }
+
+  .loader__count { left: 36px; top: auto; bottom: 120px; font-size: 32px; letter-spacing: -1px; }
 }
