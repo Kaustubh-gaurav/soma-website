@@ -7,27 +7,6 @@
 @font-face { font-family: "Satoshi"; src: url("../assets/fonts/Satoshi-Medium.woff") format("woff"); font-weight: 500; font-display: swap; }
 @font-face { font-family: "Satoshi"; src: url("../assets/fonts/Satoshi-Bold.woff") format("woff"); font-weight: 700; font-display: swap; }
 
-/* Frame geometry, in design pixels. Registered so it can animate. */
-@property --v1   { syntax: "<number>"; inherits: true; initial-value: 80; }
-@property --v2   { syntax: "<number>"; inherits: true; initial-value: 1200; }
-@property --h1   { syntax: "<number>"; inherits: true; initial-value: 80; }
-@property --fold { syntax: "<number>"; inherits: true; initial-value: 751; }
-@property --col  { syntax: "<number>"; inherits: true; initial-value: 720; }
-@property --col2 { syntax: "<number>"; inherits: true; initial-value: 960; }
-@property --r1   { syntax: "<number>"; inherits: true; initial-value: 248; }
-@property --r2   { syntax: "<number>"; inherits: true; initial-value: 416; }
-@property --r3   { syntax: "<number>"; inherits: true; initial-value: 583; }
-@property --r4   { syntax: "<number>"; inherits: true; initial-value: 617; }
-@property --col-d  { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --col2-d { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --r1-d { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --r2-d { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --r3-d { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --r4-d { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --rx-d { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --panel-o { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --scrim-o { syntax: "<number>"; inherits: true; initial-value: 1; }
-
 :root {
   /* SOMA / Color */
   --paper: #F2F1ED;
@@ -83,18 +62,9 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 :focus-visible { outline: 1px solid var(--paper); outline-offset: 4px; }
 
 /* ---------- Stage ---------- */
-.stage {
-  position: fixed; inset: 0; height: 100svh; overflow: hidden; background: #000; touch-action: none;
-  --k: 1; --ox: 0; --oy: 0;
-  --v1: 80; --v2: 1200; --h1: 80; --fold: 751;
-  transition:
-    --v1 var(--slide) var(--ease), --v2 var(--slide) var(--ease), --h1 var(--slide) var(--ease), --fold var(--slide) var(--ease),
-    --col var(--slide) var(--ease), --col2 var(--slide) var(--ease),
-    --r1 var(--slide) var(--ease), --r2 var(--slide) var(--ease), --r3 var(--slide) var(--ease), --r4 var(--slide) var(--ease),
-    --col-d var(--slide) var(--ease), --col2-d var(--slide) var(--ease),
-    --r1-d var(--slide) var(--ease), --r2-d var(--slide) var(--ease), --r3-d var(--slide) var(--ease), --r4-d var(--slide) var(--ease),
-    --rx-d var(--slide) var(--ease), --panel-o var(--slide) ease, --scrim-o var(--fade) ease;
-}
+/* The frame geometry is placed with transforms by main.js, so moving between sections only
+   animates on the compositor and never restyles the page. */
+.stage { position: fixed; inset: 0; height: 100svh; overflow: hidden; background: #000; touch-action: none; }
 
 /* ---------- Media ---------- */
 .media-layer { position: absolute; inset: 0; z-index: 1; }
@@ -118,30 +88,35 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 .spec-vid { opacity: 0; transition: opacity 300ms ease; }
 .spec-vid.is-shown { opacity: 1; }
 
-.scrim { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: var(--scrim-o);
+.scrim { position: absolute; inset: 0; z-index: 3; pointer-events: none; transition: opacity var(--fade) ease;
   background: linear-gradient(180deg, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 0.6) 100%), rgb(0 0 0 / 0.4); }
 
-/* Geometry helpers: design px to screen px */
-.frame, .panel, .loader { --X-v1: calc(var(--ox) * 1px + var(--k) * var(--v1) * 1px); }
+/* A 1 x 1 square scaled to the column, so it moves on the compositor */
+.panel { position: absolute; left: 0; top: 0; width: 1px; height: 1px; z-index: 4; pointer-events: none; opacity: 0;
+  background: var(--fill-panel); transform-origin: 0 0; will-change: transform;
+  transition: transform var(--slide) var(--ease), opacity var(--slide) ease; }
 
-.panel { position: absolute; z-index: 4; pointer-events: none; background: var(--fill-panel); opacity: var(--panel-o);
-  left: calc(var(--ox) * 1px + var(--k) * (var(--col) + 1) * 1px);
-  top: calc(var(--oy) * 1px + var(--k) * (var(--h1) + 1) * 1px);
-  width: calc(var(--k) * (var(--v2) - var(--col) - 1) * 1px);
-  height: calc(var(--k) * (var(--fold) - var(--h1) - 1) * 1px); }
-
-/* ---------- Board ---------- */
-.board { position: absolute; left: 0; top: 0; width: 1280px; height: 832px; z-index: 5; transform-origin: 0 0;
-  transform: translate(calc(var(--ox) * 1px), calc(var(--oy) * 1px)) scale(var(--k)); }
+/* ---------- Board ----------
+   Screens are drawn at 1280 x 832 and scaled by --k, the smaller of the two fits. The board then
+   stretches in the other direction, by --dx or --dy design px, so the rules keep their Figma inset
+   from every window edge. Elements anchor like Figma constraints:
+   .ay follows the bottom, .ax the right, .axc the right and the middle, .ac the centre. */
+.board { position: absolute; left: 0; top: 0; width: calc(var(--bw, 1280) * 1px); height: calc(var(--bh, 832) * 1px); z-index: 5;
+  transform-origin: 0 0; transform: scale(var(--k, 1)); --dx: 0px; --dy: 0px; }
+.ay  { translate: 0 var(--dy); }
+.ax  { translate: var(--dx) 0; }
+.axc { translate: var(--dx) calc(var(--dy) / 2); }
+.ac  { translate: calc(var(--dx) / 2) calc(var(--dy) / 2); }
 .scene { position: absolute; inset: 0; visibility: hidden; opacity: 0; transition: opacity var(--fade) ease, visibility 0s linear var(--fade); pointer-events: none; }
 .scene.is-active { visibility: visible; opacity: 1; transition: opacity var(--fade) ease; pointer-events: auto; }
 .scene.is-leaving { visibility: visible; }
 .head { position: absolute; display: flex; flex-direction: column; align-items: flex-start; }
 .band { position: absolute; top: 784px; display: flex; align-items: center; gap: 32px; }
+.band--wide { width: calc(1070px + var(--dx)); }
 
 /* Chrome */
-.logo { position: absolute; top: 28px; left: calc(var(--v1) * 1px + 25px); color: var(--paper); text-decoration: none; transition: left var(--slide) var(--ease); }
-.nav { position: absolute; top: 21px; right: calc(1280px - var(--v2) * 1px + 27px); display: flex; align-items: center; gap: 32px; }
+.logo { position: absolute; top: 28px; left: 0; color: var(--paper); text-decoration: none; transform: translateX(calc(var(--logo-x, 105) * 1px)); transition: transform var(--slide) var(--ease); }
+.nav { position: absolute; top: 21px; right: 0; display: flex; align-items: center; gap: 32px; transform: translateX(calc(var(--nav-x, -107) * 1px)); transition: transform var(--slide) var(--ease); }
 .nav__link { color: var(--text-secondary); transition: color 200ms ease; }
 button.nav__link:hover { color: var(--paper); }
 .nav__link.is-disabled { cursor: default; }
@@ -156,45 +131,30 @@ button.nav__link:hover { color: var(--paper); }
 .rail__item.is-current::before { width: 8px; background: var(--paper); }
 .rail__item.is-current .rail__label { max-width: 240px; opacity: 1; }
 
-.backed { position: absolute; left: 113px; top: 772px; width: 1055px; height: 40px; display: flex; align-items: center; justify-content: space-between; opacity: 0; pointer-events: none; transition: opacity var(--fade) ease; }
+.backed { position: absolute; left: 113px; top: 772px; width: calc(1055px + var(--dx)); height: 40px; display: flex; align-items: center; justify-content: space-between; opacity: 0; pointer-events: none; transition: opacity var(--fade) ease; }
 .stage.show-backed .backed { opacity: 1; }
 .backed__group { display: flex; align-items: center; gap: 32px; }
 .backed__logos { display: flex; align-items: center; gap: 24px; }
 .backed__logos img { display: block; object-fit: contain; }
 
-/* ---------- Frame ---------- */
+/* ---------- Frame ----------
+   Rules, column rules, row rules and crosses sit at 0,0 and are moved by main.js with
+   translate and scale, snapped to device pixels. Column and row rules are 1 x 1 squares scaled
+   to their length, so they draw in and retract. */
 .frame { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
-.rule { position: absolute; background: var(--rule); }
-.rule--v1, .rule--v2 { top: 0; bottom: 0; width: 1px; }
-.rule--v1 { left: calc(var(--ox) * 1px + var(--k) * var(--v1) * 1px); }
-.rule--v2 { left: calc(var(--ox) * 1px + var(--k) * var(--v2) * 1px); }
-.rule--h1, .rule--fold { left: 0; right: 0; height: 1px; }
-.rule--h1 { top: calc(var(--oy) * 1px + var(--k) * var(--h1) * 1px); }
-.rule--fold { top: calc(var(--oy) * 1px + var(--k) * var(--fold) * 1px); }
-.rule--col, .rule--col2 { width: 1px; top: calc(var(--oy) * 1px + var(--k) * var(--h1) * 1px); height: calc(var(--k) * (var(--fold) - var(--h1)) * 1px); transform-origin: 50% 0; }
-.rule--col { left: calc(var(--ox) * 1px + var(--k) * var(--col) * 1px); transform: scaleY(var(--col-d)); }
-.rule--col2 { left: calc(var(--ox) * 1px + var(--k) * var(--col2) * 1px); transform: scaleY(var(--col2-d)); background: var(--rule-faint); }
-.rule--r { height: 1px; left: calc(var(--ox) * 1px + var(--k) * var(--col) * 1px); width: calc(var(--k) * (var(--v2) - var(--col)) * 1px); transform-origin: 100% 50%; }
-.rule--r1 { top: calc(var(--oy) * 1px + var(--k) * var(--r1) * 1px); transform: scaleX(var(--r1-d)); }
-.rule--r2 { top: calc(var(--oy) * 1px + var(--k) * var(--r2) * 1px); transform: scaleX(var(--r2-d)); }
-.rule--r3 { top: calc(var(--oy) * 1px + var(--k) * var(--r3) * 1px); transform: scaleX(var(--r3-d)); }
-.rule--r4 { top: calc(var(--oy) * 1px + var(--k) * var(--r4) * 1px); transform: scaleX(var(--r4-d)); }
+.frame > * { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform;
+  transition: transform var(--slide) var(--ease), opacity var(--slide) var(--ease); }
+.rule { background: var(--rule); }
+.rule--v { width: 1px; height: 100%; }
+.rule--h { height: 1px; width: 100%; }
+.rule--s { width: 1px; height: 1px; }
+.rule--faint { background: var(--rule-faint); }
 
 .cross { position: absolute; width: 0; height: 0; }
 .cross::before, .cross::after { content: ""; position: absolute; background: var(--cross); }
 .cross::before { left: -8px; width: 17px; top: 0; height: 1px; }
 .cross::after { top: -8px; height: 17px; left: 0; width: 1px; }
-.cross--tl, .cross--bl { left: calc(var(--ox) * 1px + var(--k) * var(--v1) * 1px); }
-.cross--tr, .cross--br { left: calc(var(--ox) * 1px + var(--k) * var(--v2) * 1px); }
-.cross--tl, .cross--tr { top: calc(var(--oy) * 1px + var(--k) * var(--h1) * 1px); }
-.cross--bl, .cross--br { top: calc(var(--oy) * 1px + var(--k) * var(--fold) * 1px); }
-.cross--ct, .cross--cb { left: calc(var(--ox) * 1px + var(--k) * var(--col) * 1px); opacity: var(--col-d); }
-.cross--ct { top: calc(var(--oy) * 1px + var(--k) * var(--h1) * 1px); }
-.cross--cb { top: calc(var(--oy) * 1px + var(--k) * var(--fold) * 1px); }
-.cross--rx { left: calc(var(--ox) * 1px + var(--k) * var(--v2) * 1px); opacity: var(--rx-d); }
-.cross--r1 { top: calc(var(--oy) * 1px + var(--k) * var(--r1) * 1px); }
-.cross--r2 { top: calc(var(--oy) * 1px + var(--k) * var(--r2) * 1px); }
-.cross--r3 { top: calc(var(--oy) * 1px + var(--k) * var(--r3) * 1px); }
+.stage.is-resizing .frame > *, .stage.is-resizing .panel, .stage.is-resizing .logo, .stage.is-resizing .nav { transition: none; }
 
 /* ---------- 02 Specimen ---------- */
 .spec-time { position: absolute; right: 104px; top: 105px; text-align: right; display: flex; flex-direction: column; gap: 4px; }
@@ -211,39 +171,78 @@ button.nav__link:hover { color: var(--paper); }
 .metrics i { font-style: normal; }
 .scene--specimen .band { justify-content: space-between; }
 
+.metrics > span { transition: opacity 350ms ease; }
+.metrics.is-focused > span { opacity: 0.35; }
+.metrics.is-focused > span.is-hl { opacity: 1; }
+
+/* What the layer adds, under the clock */
+.readout { position: absolute; right: 104px; top: 185px; width: 240px; height: 120px; }
+.readout__item { position: absolute; right: 0; top: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right;
+  opacity: 0; transform: translateY(8px); transition: opacity 350ms ease, transform 350ms ease; }
+.readout__item.is-on { opacity: 1; transform: none; transition-delay: 120ms; }
+.keys { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.keys li { display: flex; align-items: center; gap: 8px; color: var(--paper); }
+.keys i { width: 8px; height: 8px; background: var(--sw); flex: none; }
+
+/* Overlays on the footage */
 .spec-layer { position: absolute; inset: 0; opacity: 0; transition: opacity 350ms ease; pointer-events: none; }
 .spec-layer.is-on { opacity: 1; }
-.anatomy-shape { position: absolute; left: 470px; top: 330px; width: 360px; height: 170px; overflow: visible; }
-.anatomy-shape ellipse { fill: rgb(242 241 237 / 0.06); stroke: var(--paper); stroke-width: 1; stroke-dasharray: 5 4; }
+.anatomy-shape { position: absolute; left: 450px; top: 322px; width: 360px; height: 170px; overflow: visible; }
+.anatomy-shape--b { left: 700px; top: 470px; width: 200px; height: 110px; }
+.anatomy-shape ellipse, .anatomy-shape path { fill: rgb(242 241 237 / 0.12); stroke: var(--paper); stroke-width: 1.5; stroke-dasharray: 6 4; animation: march 1.2s linear infinite; }
+.anatomy-shape--b path { fill: rgb(154 153 150 / 0.16); stroke: var(--text-muted); }
+@keyframes march { to { stroke-dashoffset: -20; } }
 .tag { position: absolute; padding: 3px 6px; background: var(--overlay-label); color: var(--paper); white-space: nowrap; }
-.spec-layer--phase { left: 105px; top: 580px; right: auto; bottom: auto; width: 270px; }
-.spec-layer--phase .t-b16m { margin-top: 4px; }
-.phase-track { position: relative; height: 3px; margin-top: 4px; }
-.phase-track::before { content: ""; position: absolute; left: 0; right: 0; top: 1px; height: 1px; background: rgb(242 241 237 / 0.4); }
-.phase-track i { position: absolute; left: 0; top: 0; width: 40px; height: 3px; background: var(--paper); transform: translateX(var(--seg, 0px)); transition: transform 600ms var(--ease); }
-.spec-layer--transcript { left: 0; right: 0; top: 590px; bottom: auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
-/* ---------- 04 Hear ---------- */
-.transcript { position: absolute; right: 80px; top: 105px; list-style: none; display: flex; flex-direction: column; gap: 16px; align-items: flex-end; }
-.transcript li { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding-right: 20px; color: var(--placeholder); transition: color 300ms ease; }
+.spec-layer--phase { left: 105px; top: 560px; right: auto; bottom: auto; width: 560px; }
+.phases { display: flex; gap: 4px; margin-top: 16px; }
+.phases i { flex: 1 1 0; height: 3px; background: rgb(242 241 237 / 0.2); position: relative; overflow: hidden; }
+.phases i.is-done { background: rgb(242 241 237 / 0.6); }
+.phases i.is-now::after { content: ""; position: absolute; inset: 0; background: var(--paper); transform: scaleX(var(--p, 0)); transform-origin: 0 50%; }
+.phases__legend { display: flex; justify-content: space-between; margin-top: 8px; }
+.phases__legend span:nth-child(2) { color: var(--paper); }
+
+.spec-layer--transcript { left: 0; right: 0; top: 560px; bottom: auto; }
+.captions { list-style: none; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.captions li { display: flex; flex-direction: column; align-items: center; gap: 4px; animation: capIn 400ms ease both; }
+.captions li .who { color: var(--text-secondary); }
+.captions li .said { font-size: 24px; line-height: 32px; font-weight: 500; letter-spacing: -0.5px; }
+.captions li.is-prev { opacity: 0.4; }
+.captions li.is-prev .said { font-size: 16px; line-height: 22px; font-weight: 400; }
+@keyframes capIn { from { opacity: 0; transform: translateY(12px); } }
+
+/* ---------- 04 Hear ----------
+   The transcript scrolls with the audio: the line being spoken holds the third slot, earlier
+   lines move up and fade, the next line waits below. Row pitch 58 (42 + 16), as in Figma. */
+.transcript { position: absolute; right: 80px; top: 105px; width: 320px; height: 216px; overflow: hidden; }
+.transcript__list { list-style: none; display: flex; flex-direction: column; gap: 16px; align-items: flex-end;
+  transform: translateY(calc(var(--row, 0) * -58px)); transition: transform 700ms var(--ease); }
+.transcript__list.is-jump { transition: none; }
+.transcript li { position: relative; height: 42px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding-right: 20px;
+  color: var(--placeholder); opacity: 0; transition: color 500ms ease, opacity 500ms ease; }
 .transcript .line { font-size: 16px; line-height: 22px; font-weight: 400; letter-spacing: -0.5px; }
-.transcript .tick { position: absolute; right: 0; top: 7px; width: 8px; height: 1px; background: var(--rail-inactive); transition: background-color 300ms ease; }
-.transcript li.is-past { color: var(--text-disabled); }
-.transcript li.is-active { color: var(--paper); }
-.transcript li.is-active .line { font-weight: 500; }
+.transcript .tick { position: absolute; right: 0; top: 7px; width: 8px; height: 1px; background: var(--rail-inactive); transition: background-color 500ms ease; }
+.transcript li.is-far { opacity: 1; color: var(--text-disabled); }
+.transcript li.is-past, .transcript li.is-next { opacity: 1; color: var(--placeholder); }
+.transcript li.is-active { opacity: 1; color: var(--paper); }
 .transcript li.is-active .tick { background: var(--paper); }
+.transcript.is-reset { animation: fadeIn 500ms ease; }
+@keyframes fadeIn { from { opacity: 0; } }
 
-.wave { position: absolute; left: 97px; top: 770px; width: 1088px; }
+.wave { position: absolute; left: 97px; top: 770px; width: calc(1088px + var(--dx)); }
 .wave__speakers { display: flex; }
 .wave__speakers span { flex: none; }
 .wave__bars { height: 26px; margin-top: 2px; display: flex; align-items: center; gap: 3px; }
 .wave__bars i { flex: none; width: 2px; background: var(--text-disabled); }
 .wave__bars i.is-played { background: var(--paper); }
-.playhead { position: absolute; top: 752px; left: 97px; width: 1px; height: 80px; background: var(--paper); transform: translateX(var(--ph, 0px)); }
+.playhead { position: absolute; top: 752px; left: 97px; width: 1px; height: 80px; background: var(--paper); will-change: transform; }
 .playhead__time { position: absolute; left: 6px; top: 0; padding: 3px 6px; background: var(--paper); color: var(--ink); white-space: nowrap; }
 
 /* ---------- 05 Understand ---------- */
 .phase-box { position: absolute; left: 905px; top: 105px; width: 270px; }
+.phase-track { position: relative; height: 3px; margin-top: 4px; }
+.phase-track::before { content: ""; position: absolute; left: 0; right: 0; top: 1px; height: 1px; background: rgb(242 241 237 / 0.4); }
+.phase-track i { position: absolute; left: 0; top: 0; width: 40px; height: 3px; background: var(--paper); transform: translateX(var(--seg, 0px)); transition: transform 600ms var(--ease); }
 .phase-track--wide { margin-top: 4px; }
 .steps { top: 782px; gap: 32px; }
 .steps span { color: var(--text-disabled); transition: color 300ms ease; }
@@ -251,10 +250,9 @@ button.nav__link:hover { color: var(--paper); }
 .steps span.is-active { color: var(--paper); }
 
 /* ---------- 06 and 07 rows ---------- */
-.rows { position: absolute; top: 81px; width: calc(1200px - var(--col) * 1px); left: calc(var(--col) * 1px); display: flex; flex-direction: column; }
-.row { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex: none; }
-.row:nth-child(odd) { height: 167px; }
-.row:nth-child(even) { height: 168px; }
+/* Column rule at 365 on both, as in Figma; the rows share the height between the rules */
+.rows { position: absolute; top: 81px; left: 366px; width: calc(834px + var(--dx)); height: calc(670px + var(--dy)); display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex: 1 1 0; min-height: 0; }
 .row > .t-b16 { width: 315px; }
 .detail { width: 315px; display: flex; flex-direction: column; gap: 16px; }
 
@@ -283,9 +281,17 @@ button.nav__link:hover { color: var(--paper); }
 .scene--delivery .band { gap: 32px; }
 
 /* ---------- 09 Custom ---------- */
-.stages { position: absolute; left: 747px; top: 81px; width: 453px; }
-.stage-row { height: 134px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; gap: 8px; }
+.stages { position: absolute; left: 747px; top: 81px; width: 453px; height: calc(670px + var(--dy)); display: flex; flex-direction: column; }
+.stage-row { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; gap: 8px; }
 .stage-row > .t-b16 { width: 168px; text-align: right; }
+
+/* 09 and 11 share the right hand column. The rows rise in one after another and the
+   illustration rises in; between these two screens the old column clears first (see go()). */
+.scene.is-active .stage-row { animation: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--late, 0ms) + 120ms + var(--i) * 70ms); }
+.scene.is-active .hospital-art { animation: rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--late, 0ms) + 120ms); }
+@keyframes rise { from { opacity: 0; transform: translateY(32px); } }
+.scene.is-late { transition-delay: var(--late); }
+.scene.is-leaving.is-quick { opacity: 0; transition: opacity 280ms ease, visibility 0s linear 280ms; }
 
 /* ---------- 11 Hospitals ---------- */
 .hospital-art { position: absolute; left: 753px; top: 108px; width: 415px; height: 616px; object-fit: cover; }
@@ -328,21 +334,17 @@ button.nav__link:hover { color: var(--paper); }
 .loader { position: absolute; inset: 0; z-index: 10; background: #000; --p: 0; transition: opacity 700ms ease, visibility 0s linear 700ms;
   --lv1: 80; --lv2: 1200; --lh1: 80; --lfold: 751; }
 .loader.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
-.loader .cross--tl, .loader .cross--bl { left: calc(var(--ox) * 1px + var(--k) * 80px); }
-.loader .cross--tr, .loader .cross--br { left: calc(var(--ox) * 1px + var(--k) * 1200px); }
-.loader .cross--tl, .loader .cross--tr { top: calc(var(--oy) * 1px + var(--k) * 80px); }
-.loader .cross--bl, .loader .cross--br { top: calc(var(--oy) * 1px + var(--k) * 751px); }
 .seg { position: absolute; background: var(--rule); will-change: transform; }
 .seg--h { height: 1px; transform: scaleX(var(--p)); }
 .seg--v { width: 1px; transform: scaleY(var(--p)); }
-.loader__count { position: absolute; left: calc(var(--ox) * 1px + var(--k) * 105px); top: calc(var(--oy) * 1px + var(--k) * 671px); font-size: calc(56px * var(--k)); letter-spacing: calc(-1.5px * var(--k)); font-variant-numeric: tabular-nums; }
+.loader__count { position: absolute; left: 0; top: 0; font-size: calc(56px * var(--k, 1)); letter-spacing: calc(-1.5px * var(--k, 1)); font-variant-numeric: tabular-nums; }
 
 /* ?still: no transitions, for screenshots */
 .stage.no-anim, .stage.no-anim * { transition: none !important; }
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .stage { transition-duration: 1ms !important; }
+  .frame > *, .panel, .scrim { transition-duration: 1ms !important; }
   .scene, .media, .media-group, .rail, .loader { transition-duration: 1ms !important; }
 }
 
@@ -384,7 +386,10 @@ button.nav__link:hover { color: var(--paper); }
   .scene--specimen .band .metrics { display: none; }
   .anatomy-shape { left: 50%; top: 38%; width: 240px; height: 120px; transform: translateX(-50%); }
   .spec-layer--anatomy .tag { left: 36px !important; top: calc(38% - 28px) !important; }
-  .spec-layer--phase { left: 36px; top: auto; bottom: 170px; }
+  .spec-layer--phase { left: 36px; top: auto; bottom: 170px; width: calc(100vw - 72px); }
+  .spec-layer--phase .t-title { font-size: 22px; }
+  .phases__legend span:nth-child(2) { display: none; }
+  .readout, .anatomy-shape--b, .spec-layer--anatomy .tag + .tag { display: none; }
   .spec-layer--transcript { top: auto; bottom: 170px; }
 
   /* 03 */
@@ -393,8 +398,7 @@ button.nav__link:hover { color: var(--paper); }
   .media--bottom { inset: 66.66% 0 0 0; }
 
   /* 04 */
-  .transcript { right: 20px; top: 76px; gap: 12px; }
-  .transcript li:nth-child(n+4) { display: none; }
+  .transcript { right: 20px; top: 76px; width: calc(100vw - 40px); }
   .wave { left: 20px; top: auto; bottom: 24px; width: calc(100vw - 40px); }
   .wave__speakers { display: none; }
   .playhead { display: none; }
@@ -416,8 +420,8 @@ button.nav__link:hover { color: var(--paper); }
   .preview { display: none; }
 
   /* 09 */
-  .stages { left: 20px; top: 65px; width: calc(100vw - 40px); }
-  .stage-row { height: 56px; padding: 0 16px 0 44px; }
+  .stages { left: 20px; top: 65px; width: calc(100vw - 40px); height: auto; }
+  .stage-row { flex: none; height: 56px; padding: 0 16px 0 44px; }
   .stage-row > .t-b16 { width: auto; font-size: 13px; line-height: 18px; max-width: 45%; }
 
   /* 11 */

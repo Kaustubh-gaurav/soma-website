@@ -10,6 +10,7 @@
   var FORM_ENDPOINT = "";
 
   var LEAVE_MS = 500;
+  var LATE_MS = 320;                     // 09 to 11: how long the old column takes to clear
   var WHEEL_THRESHOLD = 30;
   var SWIPE_THRESHOLD = 50;
 
@@ -19,6 +20,7 @@
   var railList = board.querySelector(".rail__list");
   var last = scenes.length - 1;
   var REQUEST = scenes.findIndex(function (s) { return s.classList.contains("scene--form"); });
+  var SWAP = ["Custom", "Hospitals"].map(function (l) { return scenes.findIndex(function (s) { return s.dataset.label === l; }); });
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var params = new URLSearchParams(location.search);
   if (params.has("still")) stage.classList.add("no-anim");
@@ -27,30 +29,32 @@
   var busy = false;
 
   // ---------- Frame geometry per section, in design pixels ----------
-  // col: an extra vertical rule (drawn in, or retracted when a section has none).
-  // col2: a second, fainter rule (08). rows: horizontal rules from col to v2. rx: crosses on row ends.
-  var BASE = { v1: 80, v2: 1200, h1: 80, fold: 751 };
-  var GEO = [
-    { scrim: 1, backed: 1 },                                              // 01 Hero
-    { scrim: 1 },                                                         // 02 Specimen
-    { scrim: 1 },                                                         // 03 See
-    { scrim: 1 },                                                         // 04 Hear
-    { scrim: 1 },                                                         // 05 Understand
-    { col: 365, rows: [248, 416, 583], rx: 1, panel: 1 },                 // 06 Data scale
-    { col: 380, rows: [248, 416, 583], rx: 1, panel: 1 },                 // 07 Available data
-    { col: 720, col2: 960 },                                              // 08 Delivery
-    { scrim: 1, col: 746, rows: [215, 349, 483, 617], panel: 1 },         // 09 Custom collection
-    { col: 720, panel: 1 },                                               // 11 Hospitals
-    { v1: 240, v2: 1040, h1: 88, fold: 760, noRail: 1 },                  // 12 Request
-    { h1: 512, noRail: 1, backed: 1 }                                     // 13 Footer
-  ];
-  var lastCol = 720, lastCol2 = 960, lastRows = [248, 416, 583, 617];
-  var isPhone = false, VW = 1280, VH = 832;
-  var rebuildWave = null;
-
+  // The board is 1280 x 832 scaled by k and stretched by DX or DY in the other direction, so each
+  // value is written the way Figma constrains it: left or top values stay put, right hand ones
+  // add DX, fold and below add DY, the boxed form screens centre.
+  // col: an extra vertical rule. col2: a fainter one (08). rows: horizontal rules from col to v2.
+  // rx: crosses on the row ends. panel: the paper wash in the right hand column.
+  var DX = 0, DY = 0, K = 1, isPhone = false, VW = 1280, VH = 832;
+  var BASE_H = 670;                                         // h1 + 1 to fold, in Figma
+  // Rules between equal rows: 06 and 07 have four rows (248, 416, 583), 09 has five (215 to 617).
+  function split(of) { var out = []; for (var j = 1; j < of; j++) out.push(Math.floor(81 + (BASE_H + DY) * j / of)); return out; }
+  function geoFor(i) {
+    var g = { v1: 80, v2: 1200 + DX, h1: 80, fold: 751 + DY };
+    switch (i) {
+      case 0: g.scrim = 1; g.backed = 1; break;                                    // 01 Hero
+      case 1: case 2: case 3: case 4: g.scrim = 1; break;                            // 02 to 05
+      case 5: case 6: g.col = 365; g.rows = split(4); g.rx = 1; g.panel = 1; break; // 06, 07
+      case 7: g.col = 720 + DX; g.col2 = 960 + DX; break;                           // 08 Delivery
+      case 8: g.scrim = 1; g.col = 746 + DX; g.rows = split(5); g.panel = 1; break; // 09 Custom
+      case 9: g.col = 746 + DX; g.panel = 1; break;                                 // 11 Hospitals
+      case 10: g.v1 = 240 + DX / 2; g.v2 = 1040 + DX / 2; g.h1 = 88 + DY / 2; g.fold = 760 + DY / 2; g.noRail = 1; break; // 12 Request
+      case 11: g.h1 = 512 + DY; g.noRail = 1; g.backed = 1; break;                  // 13 Footer
+    }
+    return g;
+  }
   // Phones: the board is not scaled, so geometry is in real pixels.
   function phoneGeo(i) {
-    var g = GEO[i] || {};
+    var g = geoFor(i);
     var o = { v1: 20, v2: VW - 20, h1: 64, fold: VH - 96, scrim: g.scrim, backed: g.backed, noRail: g.noRail };
     var span = o.fold - o.h1;
     if (i === 5 || i === 6) { o.col = 20; o.colHidden = 1; o.rows = [1, 2, 3].map(function (n) { return Math.round(o.h1 + span * n / 4); }); o.rx = 1; o.panel = 1; }
@@ -60,51 +64,72 @@
     return o;
   }
 
+  var F = {};
+  Array.prototype.forEach.call(stage.querySelectorAll(".frame > [data-f]"), function (el) { F[el.dataset.f] = el; });
+  var panelEl = stage.querySelector(".panel"), scrimEl = stage.querySelector(".scrim");
+  var dpr = window.devicePixelRatio || 1;
+  function px(v) { return Math.round(v * K * dpr) / dpr; }             // design px to snapped screen px
+  var lastCol = 720, lastCol2 = 960, lastRows = [248, 416, 583, 617];
+  function put(el, x, y, sx, sy, o) {
+    el.style.transform = "translate(" + x + "px," + y + "px)" + (sx != null ? " scale(" + sx + "," + sy + ")" : "");
+    if (o != null) el.style.opacity = o;
+  }
+
   function applyGeometry(i) {
-    var g = isPhone ? phoneGeo(i) : (GEO[i] || {});
-    var s = stage.style;
-    ["v1", "v2", "h1", "fold"].forEach(function (k) { s.setProperty("--" + k, g[k] != null ? g[k] : BASE[k]); });
+    var g = isPhone ? phoneGeo(i) : geoFor(i);
     if (g.col != null) lastCol = g.col;
     if (g.col2 != null) lastCol2 = g.col2;
-    s.setProperty("--col", lastCol);
-    s.setProperty("--col-d", g.col != null && !g.colHidden ? 1 : 0);
-    s.setProperty("--col2", lastCol2);
-    s.setProperty("--col2-d", g.col2 != null ? 1 : 0);
+    var X1 = px(g.v1), X2 = px(g.v2), Y1 = px(g.h1), Y2 = px(g.fold), C = px(lastCol), C2 = px(lastCol2);
+    var len = Math.max(0, Y2 - Y1), colOn = g.col != null && !g.colHidden ? 1 : 0;
+    put(F.v1, X1, 0); put(F.v2, X2, 0); put(F.h1, 0, Y1); put(F.fold, 0, Y2);
+    put(F.col, C, Y1, 1, len * colOn || 0.0001);
+    put(F.col2, C2, Y1, 1, g.col2 != null ? len : 0.0001);
     var rows = g.rows || [];
     for (var r = 0; r < 4; r++) {
       if (rows[r] != null) lastRows[r] = rows[r];
-      s.setProperty("--r" + (r + 1), lastRows[r]);
-      s.setProperty("--r" + (r + 1) + "-d", rows[r] != null ? 1 : 0);
+      var w = rows[r] != null ? X2 - C : 0.0001;
+      put(F["r" + (r + 1)], X2 - w, px(lastRows[r]), w, 1);
     }
-    s.setProperty("--rx-d", g.rx ? 1 : 0);
-    s.setProperty("--panel-o", g.panel ? 1 : 0);
-    s.setProperty("--scrim-o", g.scrim ? 1 : 0);
+    put(F.tl, X1, Y1); put(F.tr, X2, Y1); put(F.bl, X1, Y2); put(F.br, X2, Y2);
+    put(F.ct, C, Y1, null, null, colOn); put(F.cb, C, Y2, null, null, colOn);
+    for (var x = 1; x <= 3; x++) put(F["x" + x], X2, px(lastRows[x - 1]), null, null, g.rx ? 1 : 0);
+    put(panelEl, C + px(1), Y1 + px(1), Math.max(0, X2 - C - px(1)), Math.max(0, len - px(1)), g.panel ? 1 : 0);
+    scrimEl.style.opacity = g.scrim ? 1 : 0;
+    board.style.setProperty("--logo-x", isPhone ? 36 : g.v1 + 25);
+    board.style.setProperty("--nav-x", isPhone ? -36 : g.v2 - 27 - (1280 + DX));
     stage.classList.toggle("no-rail", !!g.noRail);
     stage.classList.toggle("show-backed", !!g.backed);
   }
 
-  // ---------- Fit the 1280 x 832 board to the window ----------
+  // ---------- Fit the board to the window ----------
   var loaderSegs = [];
+  var rebuildWave = null, resizeTimer = 0;
   function layout() {
     var vw = window.innerWidth, vh = window.innerHeight;
     isPhone = vw <= 760; VW = vw; VH = vh;
-    var k = isPhone ? 1 : Math.min(vw / 1280, vh / 832);
-    var ox = isPhone ? 0 : (vw - 1280 * k) / 2, oy = isPhone ? 0 : (vh - 832 * k) / 2;
-    stage.style.setProperty("--k", k);
-    stage.style.setProperty("--ox", ox);
-    stage.style.setProperty("--oy", oy);
+    dpr = window.devicePixelRatio || 1;
+    K = isPhone ? 1 : Math.min(vw / 1280, vh / 832);
+    DX = isPhone ? 0 : vw / K - 1280; DY = isPhone ? 0 : vh / K - 832;
+    stage.style.setProperty("--k", K);
+    board.style.setProperty("--bw", 1280 + DX); board.style.setProperty("--bh", 832 + DY);
+    board.style.setProperty("--dx", DX + "px"); board.style.setProperty("--dy", DY + "px");
+    stage.classList.add("is-resizing");
+    clearTimeout(resizeTimer); resizeTimer = setTimeout(function () { stage.classList.remove("is-resizing"); }, 120);
     applyGeometry(current);
     if (rebuildWave) rebuildWave();
-    // Loader segments: each rule grows out of its two crosses, towards the screen edges and
-    // towards the middle, and meets itself at 100%.
-    var X1 = isPhone ? 20 : ox + 80 * k, X2 = isPhone ? vw - 20 : ox + 1200 * k, Y1 = isPhone ? 64 : oy + 80 * k, Y2 = isPhone ? vh - 96 : oy + 751 * k;
+    // Loader: each rule grows out of its two crosses, towards the screen edges and the middle.
+    var g = isPhone ? phoneGeo(0) : geoFor(0);
+    var X1 = px(g.v1), X2 = px(g.v2), Y1 = px(g.h1), Y2 = px(g.fold);
     [["tl", X1, Y1], ["tr", X2, Y1], ["bl", X1, Y2], ["br", X2, Y2]].forEach(function (c) {
       var el = document.querySelector("#loader .cross--" + c[0]);
       if (el) { el.style.left = c[1] + "px"; el.style.top = c[2] + "px"; }
     });
+    var cnt = document.querySelector(".loader__count");
+    cnt.style.left = (isPhone ? 36 : px(105)) + "px";
+    cnt.style.top = (isPhone ? vh - 152 : px(671 + DY)) + "px";
     var mx = (X1 + X2) / 2, my = (Y1 + Y2) / 2;
     loaderSegs.forEach(function (sg) {
-      var e = sg.el, st = e.style;
+      var st = sg.el.style;
       if (sg.h) {
         var y = sg.line === "h1" ? Y1 : Y2;
         st.top = y + "px"; st.height = "1px";
@@ -153,14 +178,48 @@
   var medias = Array.prototype.slice.call(stage.querySelectorAll(".media-layer > [data-scene]"));
   function mediaFor(i) { return medias.filter(function (m) { return +m.dataset.scene === i; })[0]; }
   function videosIn(el) { return el ? Array.prototype.slice.call(el.querySelectorAll("video")) : []; }
-  function play(v) { if (reduceMotion) return; var p = v.play(); if (p && p.catch) p.catch(function () {}); }
-  function warm(i) { videosIn(mediaFor(i)).forEach(function (v) { if (v.preload !== "auto") { v.preload = "auto"; v.load(); } }); }
+  // Reduce Motion still plays the clips: they are what the page shows. It only cuts the slides.
+  // A browser that refuses to start a muted clip on its own (Low Power Mode, data saver) gets it
+  // started by the visitor's first tap, click or key.
+  var blocked = false;
+  function play(v) {
+    var p = v.play();
+    if (p && p.catch) p.catch(function (err) { if (err && err.name === "NotAllowedError") blocked = true; });
+  }
+  ["touchend", "click", "keydown"].forEach(function (t) {
+    document.addEventListener(t, function () {
+      if (!blocked) return; blocked = false;
+      videosIn(mediaFor(current)).forEach(function (v) { if (current !== 1 || v.classList.contains("is-shown")) play(v); });
+    }, true);
+  });
+  // Buffer a clip ahead of time without restarting a download that is already running.
+  function warm(i) {
+    videosIn(mediaFor(i)).forEach(function (v) {
+      if (v.preload === "auto") return;
+      v.preload = "auto";
+      if (v.readyState < 2 && v.networkState !== 2) v.load();
+    });
+  }
+  // A clip that fails to load gets one more try.
+  medias.forEach(function (m) {
+    videosIn(m).forEach(function (v) {
+      var tried = false;
+      v.addEventListener("error", function () {
+        if (tried) return; tried = true;
+        setTimeout(function () { v.load(); if (+m.dataset.scene === current && current !== 1) play(v); }, 1500);
+      });
+    });
+  });
 
   function showMedia(next, prev) {
     var to = mediaFor(next), from = mediaFor(prev);
     medias.forEach(function (m) { if (m !== to && m !== from) m.classList.remove("is-on", "is-leaving"); });
-    if (from && from !== to) { from.classList.remove("is-on"); from.classList.add("is-leaving"); setTimeout(function () { from.classList.remove("is-leaving"); videosIn(from).forEach(function (v) { if (+from.dataset.scene !== current) v.pause(); }); }, LEAVE_MS); }
-    if (to) { to.classList.add("is-on"); if (next !== 1) videosIn(to).forEach(function (v) { if (v.currentTime > 0.05) try { v.currentTime = 0; } catch (e) {} play(v); }); }
+    if (from && from !== to) {
+      from.classList.remove("is-on"); from.classList.add("is-leaving");
+      setTimeout(function () { from.classList.remove("is-leaving"); if (mediaFor(current) !== from) videosIn(from).forEach(function (v) { v.pause(); }); }, LEAVE_MS);
+    }
+    // Looping clips carry on from where they were; no seek, so nothing stalls on the way in.
+    if (to) { to.classList.add("is-on"); if (next !== 1) videosIn(to).forEach(play); }
     warm(next + 1);
   }
 
@@ -168,20 +227,36 @@
   var controllers = {};
 
   // 02 Specimen: five layers, each one play of the clip; the underline under the active layer
-  // fills as the clip plays, and the next layer starts when the clip ends.
+  // fills as the clip plays, and the next layer starts when the clip ends. Every layer changes
+  // more than the footage: the readout under the clock, its overlay, and the band's figures.
   (function () {
     var scene = scenes[1];
     var raw = stage.querySelector(".spec-vid--raw"), ann = stage.querySelector(".spec-vid--annotated");
     var toggles = Array.prototype.slice.call(scene.querySelectorAll(".toggle"));
-    var layers = Array.prototype.slice.call(scene.querySelectorAll(".spec-layer"));
+    var layers = Array.prototype.slice.call(scene.querySelectorAll(".spec-layer, .readout__item"));
+    var metrics = scene.querySelector(".metrics");
+    var chips = Array.prototype.slice.call(metrics.children);
     var clock = document.getElementById("spec-clock");
-    var capWho = document.getElementById("spec-cap-who"), capLine = document.getElementById("spec-cap-line");
-    var phaseSeg = scene.querySelector(".spec-layer--phase .phase-track i");
-    var CAPS = [["00:42:12 · Surgeon", "Prepare the graft."], ["00:42:15 · Assistant", "Graft ready."], ["00:42:18 · Surgeon", "Hold here."]];
-    var layer = 0, active = false, raf = 0, v = raw;
+    var capsEl = document.getElementById("spec-captions");
+    var phasesEl = document.getElementById("spec-phases");
+    var NOW = 6;                                           // phase 07 of 11
+    for (var n = 0; n < 11; n++) { var seg = document.createElement("i"); if (n < NOW) seg.className = "is-done"; if (n === NOW) seg.className = "is-now"; phasesEl.appendChild(seg); }
+    var nowSeg = phasesEl.children[NOW];
+    var CAPS = [["00:42:12 · Surgeon", "Prepare the graft."], ["00:42:14 · Assistant", "Graft ready."], ["00:42:16 · Surgeon", "Hold here."]];
+    var layer = 0, active = false, raf = 0, v = raw, capIdx = -1;
     function videoFor(l) { return l === 1 ? ann : raw; }
+    function caption(i) {
+      capsEl.innerHTML = "";
+      [i - 1, i].forEach(function (j) {
+        if (j < 0) return;
+        var li = document.createElement("li"); if (j < i) li.className = "is-prev";
+        li.innerHTML = '<span class="who t-caps12"></span><span class="said"></span>';
+        li.children[0].textContent = CAPS[j][0]; li.children[1].textContent = CAPS[j][1];
+        capsEl.appendChild(li);
+      });
+    }
     function set(l) {
-      layer = l;
+      layer = l; capIdx = -1;
       var nv = videoFor(l);
       [raw, ann].forEach(function (x) { if (x !== nv) { x.pause(); x.classList.remove("is-shown"); } });
       v = nv; v.classList.add("is-shown");
@@ -189,6 +264,10 @@
       play(v);
       toggles.forEach(function (t, i) { t.classList.toggle("is-active", i === l); t.setAttribute("aria-selected", i === l); t.style.setProperty("--progress", 0); });
       layers.forEach(function (x) { x.classList.toggle("is-on", +x.dataset.layer === l); });
+      var any = false;
+      chips.forEach(function (c) { var on = +c.dataset.for === l; c.classList.toggle("is-hl", on); any = any || on; });
+      metrics.classList.toggle("is-focused", any);
+      nowSeg.style.setProperty("--p", 0);
     }
     function tick() {
       if (!active) return;
@@ -197,8 +276,8 @@
       var t = toggles[layer]; if (t) t.style.setProperty("--progress", p.toFixed(4));
       var sec = 12 + Math.floor(v.currentTime);
       clock.textContent = "00:42:" + (sec < 10 ? "0" : "") + sec;
-      if (layer === 4) { var c = CAPS[Math.min(CAPS.length - 1, Math.floor(p * CAPS.length))]; if (capLine.textContent !== c[1]) { capWho.textContent = c[0]; capLine.textContent = c[1]; } }
-      if (layer === 3) phaseSeg.style.setProperty("--seg", Math.round(p * 230) + "px");
+      if (layer === 3) nowSeg.style.setProperty("--p", p.toFixed(4));
+      if (layer === 4) { var c = Math.min(CAPS.length - 1, Math.floor(p * CAPS.length)); if (c !== capIdx) { capIdx = c; caption(c); } }
       raf = requestAnimationFrame(tick);
     }
     [raw, ann].forEach(function (x) { x.addEventListener("ended", function () { if (active && x === v) set((layer + 1) % toggles.length); }); });
@@ -210,17 +289,16 @@
   })();
 
   // 04 Hear: the waveform plays like an audio player (visual only). The playhead crosses it,
-  // bars before it light up, and the transcript follows the speaker under the playhead.
+  // bars before it light up, and the transcript scrolls so the line being spoken holds its slot.
   (function () {
-    var scene = scenes[3];
     var barsEl = document.getElementById("wave-bars");
     var ph = document.getElementById("playhead"), phTime = document.getElementById("playhead-time");
-    var lines = Array.prototype.slice.call(document.querySelectorAll("#transcript li"));
-    var W = 0, BAR = 5, LOOP = 12000;
+    var box = document.getElementById("transcript"), list = box.querySelector(".transcript__list");
+    var lines = Array.prototype.slice.call(list.children);
+    var W = 0, BAR = 5, LOOP = 12000, FIRST = 2;           // lines[2] is spoken over the first speaker cell
     var SEG0 = [[0, 321], [321, 643], [643, 954], [954, 1088]];   // speaker cells from Figma, at 1088 wide
     var SEG = SEG0, bars = [];
     var active = false, raf = 0, t0 = 0, lastIdx = -1, lastBar = -1;
-    // Bars are built to the waveform's real width (1088 on the board, the screen width on phones).
     rebuildWave = function () {
       var w = barsEl.offsetWidth || 1088;
       if (bars.length && Math.abs(w - W) < 2) return;
@@ -238,20 +316,34 @@
       }
     };
     rebuildWave();
+    function speak(idx, jump) {
+      var a = FIRST + idx;                                  // the active line sits in the third slot
+      list.classList.toggle("is-jump", !!jump);
+      list.style.setProperty("--row", a - 2);
+      lines.forEach(function (l, j) {
+        var rel = j - a;
+        l.className = rel === 0 ? "is-active" : rel === -1 ? "is-past" : rel === -2 ? "is-far" : rel === 1 ? "is-next" : "";
+      });
+      if (jump) { box.classList.remove("is-reset"); void box.offsetWidth; box.classList.add("is-reset"); requestAnimationFrame(function () { list.classList.remove("is-jump"); }); }
+    }
     function tick(now) {
       if (!active) return;
-      var t = ((now - t0) % LOOP) / LOOP, px = t * W;
-      ph.style.setProperty("--ph", px.toFixed(1) + "px");
+      var t = ((now - t0) % LOOP) / LOOP, x = t * W;
+      ph.style.transform = "translateX(" + x.toFixed(1) + "px)";
       var sec = 12 + Math.floor(t * 12);
       phTime.textContent = "00:42:" + (sec < 10 ? "0" : "") + sec;
-      var upto = Math.floor(px / BAR);
-      if (upto !== lastBar) { bars.forEach(function (b, j) { b.classList.toggle("is-played", j <= upto); }); lastBar = upto; }
-      var idx = SEG.findIndex(function (s) { return px >= s[0] && px < s[1]; });
-      if (idx !== lastIdx) { lines.forEach(function (l, j) { l.classList.toggle("is-active", j === idx); l.classList.toggle("is-past", j < idx - 1); }); lastIdx = idx; }
+      var upto = Math.floor(x / BAR);
+      if (upto !== lastBar) {
+        if (upto < lastBar) { for (var j = 0; j < bars.length; j++) bars[j].classList.toggle("is-played", j <= upto); }
+        else for (var k = Math.max(0, lastBar + 1); k <= upto && k < bars.length; k++) bars[k].classList.add("is-played");
+        lastBar = upto;
+      }
+      var idx = SEG.findIndex(function (s) { return x >= s[0] && x < s[1]; });
+      if (idx !== lastIdx && idx > -1) { speak(idx, idx < lastIdx || lastIdx === -1); lastIdx = idx; }
       raf = requestAnimationFrame(tick);
     }
     controllers[3] = {
-      enter: function () { active = true; t0 = performance.now(); lastIdx = -1; lastBar = -1; raf = requestAnimationFrame(tick); },
+      enter: function () { active = true; t0 = performance.now(); lastIdx = -1; lastBar = -1; bars.forEach(function (b) { b.classList.remove("is-played"); }); raf = requestAnimationFrame(tick); },
       leave: function () { active = false; cancelAnimationFrame(raf); }
     };
   })();
@@ -322,8 +414,13 @@
     next = Math.max(0, Math.min(last, next));
     if (next === current || busy) return;
     var from = scenes[current], to = scenes[next], prev = current;
-    scenes.forEach(function (s) { if (s !== from) s.classList.remove("is-leaving"); });
+    scenes.forEach(function (s) { if (s !== from) s.classList.remove("is-leaving", "is-quick"); s.classList.remove("is-late"); });
+    // 09 and 11 share the right hand column: the old column clears first, then the new one rises in.
+    var late = !reduceMotion && ((prev === SWAP[0] && next === SWAP[1]) || (prev === SWAP[1] && next === SWAP[0])) ? LATE_MS : 0;
+    to.style.setProperty("--late", late + "ms");
     from.classList.remove("is-active"); from.classList.add("is-leaving");
+    from.classList.toggle("is-quick", !!late);
+    to.classList.toggle("is-late", !!late);
     to.classList.add("is-active");
     if (controllers[prev]) controllers[prev].leave();
     current = next;
@@ -331,7 +428,7 @@
     setState();
     showMedia(next, prev);
     if (controllers[next]) controllers[next].enter();
-    setTimeout(function () { from.classList.remove("is-leaving"); busy = false; }, reduceMotion ? 50 : LEAVE_MS);
+    setTimeout(function () { from.classList.remove("is-leaving", "is-quick"); busy = false; }, reduceMotion ? 50 : LEAVE_MS + late);
   }
 
   function setState() {
