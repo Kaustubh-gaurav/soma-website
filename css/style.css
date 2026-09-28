@@ -174,9 +174,6 @@ button.nav__link:hover { color: var(--paper); }
 .metrics i { font-style: normal; }
 .scene--specimen .band { justify-content: space-between; }
 
-.metrics > span { transition: opacity 350ms ease; }
-.metrics.is-focused > span { opacity: 0.35; }
-.metrics.is-focused > span.is-hl { opacity: 1; }
 
 /* What the layer adds, under the clock */
 .readout { position: absolute; right: 104px; top: 185px; width: 240px; height: 120px; }
@@ -269,14 +266,15 @@ button.nav__link:hover { color: var(--paper); }
 .scene.is-leaving { opacity: 0; transition: opacity var(--out) ease, visibility 0s linear var(--out); }
 
 /* ---------- 11 Hospitals ----------
-   Three chips drawn at one width (300), bottoms 175 apart. They start stacked on the middle
+   Three chips cut to the same solid body width (300, images 306 with a 3 px soft edge),
+   body bottoms 175 apart. They start stacked on the middle
    one, so only the top chip shows, then open out: Hospital data rises, AI ready data drops and
    the secure data layer is revealed. The chips carry their own labels. */
-.chips { position: absolute; left: 812px; top: 124px; width: 300px; height: 576px; --lift: 175px; }
-.chip { position: absolute; left: 0; width: 300px; height: auto; display: block; }
-.chip--hospitals { top: 16px; }
-.chip--capture { top: 198px; }
-.chip--data { top: 376px; }
+.chips { position: absolute; left: 809px; top: 124px; width: 306px; height: 580px; --lift: 175px; }
+.chip { position: absolute; left: 0; width: 306px; height: auto; display: block; }
+.chip--hospitals { top: 14px; }
+.chip--capture { top: 190.5px; }
+.chip--data { top: 364.5px; }
 .scene.is-active .chips { animation: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--late, 0ms); }
 .scene.is-active .chip--hospitals { animation: chipUp 1000ms cubic-bezier(0.65, 0, 0.35, 1) both; animation-delay: calc(var(--late, 0ms) + 650ms); }
 .scene.is-active .chip--data { animation: chipDown 1000ms cubic-bezier(0.65, 0, 0.35, 1) both; animation-delay: calc(var(--late, 0ms) + 650ms); }
@@ -408,11 +406,11 @@ button.nav__link:hover { color: var(--paper); }
   .stage-row > .t-b16 { width: auto; font-size: 13px; line-height: 18px; max-width: 45%; }
 
   /* 11 */
-  .chips { left: 50%; top: 76px; margin-left: -110px; width: 220px; height: 420px; --lift: 128px; }
-  .chip { width: 220px; }
-  .chip--hospitals { top: 12px; }
-  .chip--capture { top: 145px; }
-  .chip--data { top: 276px; }
+  .chips { left: 50%; top: 76px; margin-left: -112px; width: 224px; height: 425px; --lift: 128px; }
+  .chip { width: 224px; }
+  .chip--hospitals { top: 10px; }
+  .chip--capture { top: 140px; }
+  .chip--data { top: 267px; }
 
   /* 12 */
   .form { left: 36px; top: 84px; width: calc(100vw - 72px); max-height: calc(100svh - 120px); overflow-y: auto; gap: 18px; padding-bottom: 24px; }

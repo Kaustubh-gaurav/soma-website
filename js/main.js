@@ -71,13 +71,27 @@
   var lastCol = 720, lastCol2 = 960, lastRows = [248, 416, 583, 617];
   // Pieces are sized to their real length (a stretched 1 px square blurs on the GPU) and drawn in
   // or retracted with a 0 to 1 scale, which rests at 1 so the line stays crisp.
+  // A piece that was hidden jumps to its new place before it appears, so it draws in from its own
+  // rule (a row grows left from the right rule) instead of sliding over from the last screen.
+  function snap(el, apply) {
+    el.style.transition = "none"; apply(); void el.offsetWidth; el.style.transition = "";
+  }
   function put(el, x, y, o) {
-    el.style.transform = "translate(" + x + "px," + y + "px)";
-    if (o != null) el.style.opacity = o;
+    var tr = "translate(" + x + "px," + y + "px)";
+    if (o != null) {
+      if (!o) { el._on = false; el.style.opacity = 0; return; }      // fades out where it is
+      if (!el._on) snap(el, function () { el.style.transform = tr; el.style.opacity = 0; });
+      el._on = true; el.style.opacity = o;
+    }
+    el.style.transform = tr;
   }
   function seg(el, x, y, w, h, on) {
+    var tr = function (k) { return "translate(" + x + "px," + y + "px) scale(" + (w === 1 ? 1 : k) + "," + (h === 1 ? 1 : k) + ")"; };
+    if (on && !el._on) snap(el, function () { el.style.width = w + "px"; el.style.height = h + "px"; el.style.transform = tr(0); });
+    el._on = !!on;
+    if (!on) { el.style.transform = el.style.transform.replace(/scale\([^)]*\)/, "scale(" + (w === 1 ? 1 : 0) + "," + (h === 1 ? 1 : 0) + ")"); return; }
     el.style.width = w + "px"; el.style.height = h + "px";
-    el.style.transform = "translate(" + x + "px," + y + "px) scale(" + (w === 1 ? 1 : on) + "," + (h === 1 ? 1 : on) + ")";
+    el.style.transform = tr(1);
   }
 
   function applyGeometry(i) {
@@ -233,14 +247,12 @@
 
   // 02 Specimen: five layers, each one play of the clip; the underline under the active layer
   // fills as the clip plays, and the next layer starts when the clip ends. The centre stays clear:
-  // a layer changes the footage, the readout under the clock and the band's figures.
+  // a layer changes the footage and the readout under the clock; the band stays as designed.
   (function () {
     var scene = scenes[1];
     var raw = stage.querySelector(".spec-vid--raw"), ann = stage.querySelector(".spec-vid--annotated");
     var toggles = Array.prototype.slice.call(scene.querySelectorAll(".toggle"));
     var layers = Array.prototype.slice.call(scene.querySelectorAll(".readout__item"));
-    var metrics = scene.querySelector(".metrics");
-    var chips = Array.prototype.slice.call(metrics.children);
     var clock = document.getElementById("spec-clock");
     var layer = 0, active = false, raf = 0, v = raw;
     function videoFor(l) { return l === 1 ? ann : raw; }
@@ -253,9 +265,6 @@
       play(v);
       toggles.forEach(function (t, i) { t.classList.toggle("is-active", i === l); t.setAttribute("aria-selected", i === l); t.style.setProperty("--progress", 0); });
       layers.forEach(function (x) { x.classList.toggle("is-on", +x.dataset.layer === l); });
-      var any = false;
-      chips.forEach(function (c) { var on = +c.dataset.for === l; c.classList.toggle("is-hl", on); any = any || on; });
-      metrics.classList.toggle("is-focused", any);
     }
     function tick() {
       if (!active) return;
@@ -276,8 +285,8 @@
 
   // 04 Hear: the waveform plays like an audio player (visual only). The playhead crosses it,
   // bars before it light up, and the transcript scrolls so the line being spoken holds its slot.
-  // One clock drives all three: a line becomes current the moment the playhead enters its
-  // speaker's cell, and its timestamp is the time the playhead shows at that moment.
+  // One clock drives all three: each speaker's cell holds two lines, a line becomes current the
+  // moment the playhead reaches it, and its timestamp is the time the playhead shows then.
   (function () {
     var barsEl = document.getElementById("wave-bars");
     var ph = document.getElementById("playhead"), phTime = document.getElementById("playhead-time");
@@ -313,7 +322,7 @@
         var rel = j - a;
         l.className = rel === 0 ? "is-active" : rel === -1 ? "is-past" : rel === -2 ? "is-far" : rel === 1 ? "is-next" : "";
       });
-      speakers.forEach(function (sp, j) { sp.classList.toggle("is-active", j === idx); });
+      speakers.forEach(function (sp, j) { sp.classList.toggle("is-active", j === Math.floor(idx / 2)); });
       if (jump) { box.classList.remove("is-reset"); void box.offsetWidth; box.classList.add("is-reset"); requestAnimationFrame(function () { list.classList.remove("is-jump"); }); }
     }
     function tick(now) {
@@ -328,7 +337,8 @@
         else for (var k = Math.max(0, lastBar + 1); k <= upto && k < bars.length; k++) bars[k].classList.add("is-played");
         lastBar = upto;
       }
-      var idx = SEG.findIndex(function (s) { return x >= s[0] && x < s[1]; });
+      var cell = SEG.findIndex(function (s) { return x >= s[0] && x < s[1]; });
+      var idx = cell < 0 ? -1 : cell * 2 + (x >= (SEG[cell][0] + SEG[cell][1]) / 2 ? 1 : 0);
       if (idx !== lastIdx && idx > -1) { speak(idx, idx < lastIdx || lastIdx === -1); lastIdx = idx; }
       raf = requestAnimationFrame(tick);
     }
