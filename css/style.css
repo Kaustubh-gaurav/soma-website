@@ -230,8 +230,8 @@ button.nav__link:hover { color: var(--paper); }
 /* Column rule at 365 on both, as in Figma; the rows share the height between the rules */
 .rows { position: absolute; top: 81px; left: 366px; width: calc(834px + var(--dx)); height: calc(670px + var(--dy)); display: flex; flex-direction: column; }
 .row { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex: 1 1 0; min-height: 0; }
-.row > .t-b16 { width: 315px; }
-.detail { width: 315px; display: flex; flex-direction: column; gap: 16px; }
+.row > .t-b16 { width: 429px; }
+.detail { width: 429px; display: flex; flex-direction: column; gap: 16px; }
 
 /* ---------- 08 Delivery ---------- */
 .tree { position: absolute; left: 721px; top: 105px; width: 239px; }
@@ -269,21 +269,18 @@ button.nav__link:hover { color: var(--paper); }
 .scene.is-leaving { opacity: 0; transition: opacity var(--out) ease, visibility 0s linear var(--out); }
 
 /* ---------- 11 Hospitals ----------
-   The chips start stacked on the middle one, so only the top chip shows. They open out:
-   Hospitals rises 175, AI-ready data drops 175, SOMA capture is revealed, then the labels. */
+   Three chips drawn at one width (300), bottoms 175 apart. They start stacked on the middle
+   one, so only the top chip shows, then open out: Hospital data rises, AI ready data drops and
+   the secure data layer is revealed. The chips carry their own labels. */
 .chips { position: absolute; left: 812px; top: 124px; width: 300px; height: 576px; --lift: 175px; }
-.chip-label:nth-of-type(2) { --i: 1; }
-.chip-label:nth-of-type(3) { --i: 2; }
 .chip { position: absolute; left: 0; width: 300px; height: auto; display: block; }
-.chip--hospitals { top: 0; }
-.chip--capture { top: 138px; }
-.chip--data { top: 372px; }
-.chip-label { position: absolute; left: -40px; color: var(--text-muted); white-space: nowrap; }
+.chip--hospitals { top: 16px; }
+.chip--capture { top: 198px; }
+.chip--data { top: 376px; }
 .scene.is-active .chips { animation: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--late, 0ms); }
 .scene.is-active .chip--hospitals { animation: chipUp 1000ms cubic-bezier(0.65, 0, 0.35, 1) both; animation-delay: calc(var(--late, 0ms) + 650ms); }
 .scene.is-active .chip--data { animation: chipDown 1000ms cubic-bezier(0.65, 0, 0.35, 1) both; animation-delay: calc(var(--late, 0ms) + 650ms); }
 .scene.is-active .chip--capture { animation: chipShow 1000ms linear both; animation-delay: calc(var(--late, 0ms) + 650ms); }
-.scene.is-active .chip-label { animation: fadeIn 500ms ease both; animation-delay: calc(var(--late, 0ms) + 1550ms + var(--i, 0) * 80ms); }
 @keyframes chipUp { from { transform: translateY(var(--lift)); } }
 @keyframes chipDown { 0% { transform: translateY(calc(var(--lift) * -1)); opacity: 0; } 20% { opacity: 1; } }
 @keyframes chipShow { 0% { opacity: 0; } 25% { opacity: 1; } }
@@ -413,9 +410,9 @@ button.nav__link:hover { color: var(--paper); }
   /* 11 */
   .chips { left: 50%; top: 76px; margin-left: -110px; width: 220px; height: 420px; --lift: 128px; }
   .chip { width: 220px; }
-  .chip--capture { top: 101px; }
-  .chip--data { top: 273px; }
-  .chip-label { display: none; }
+  .chip--hospitals { top: 12px; }
+  .chip--capture { top: 145px; }
+  .chip--data { top: 276px; }
 
   /* 12 */
   .form { left: 36px; top: 84px; width: calc(100vw - 72px); max-height: calc(100svh - 120px); overflow-y: auto; gap: 18px; padding-bottom: 24px; }
