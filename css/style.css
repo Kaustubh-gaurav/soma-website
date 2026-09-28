@@ -28,6 +28,7 @@
   --ease: cubic-bezier(0.76, 0, 0.24, 1);
   --slide: 900ms;
   --fade: 450ms;
+  --out: 350ms;
 }
 
 * { box-sizing: border-box; }
@@ -68,10 +69,11 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 
 /* ---------- Media ---------- */
 .media-layer { position: absolute; inset: 0; z-index: 1; }
-.media, .media-group { position: absolute; inset: 0; opacity: 0; overflow: hidden; background: #000; transition: opacity var(--fade) ease; }
+/* Changing section never overlaps two screens: the old footage and copy fade out first
+   (--out), then the new ones fade in. */
+.media, .media-group { position: absolute; inset: 0; opacity: 0; overflow: hidden; background: #000; transition: opacity var(--out) ease; }
 .media-group > .media { opacity: 1; }
-.media.is-on, .media-group.is-on { opacity: 1; z-index: 2; }
-.media.is-leaving, .media-group.is-leaving { opacity: 1; z-index: 1; }
+.media.is-on, .media-group.is-on { opacity: 1; z-index: 2; transition: opacity var(--fade) ease var(--out); }
 .media--tl { inset: 0 50% 50% 0; }
 .media--tr { inset: 0 0 50% 50%; }
 .media--bottom { inset: 50% 0 0 0; }
@@ -256,20 +258,35 @@ button.nav__link:hover { color: var(--paper); }
 .scene--delivery .band { gap: 32px; }
 
 /* ---------- 09 Custom ---------- */
-.stages { position: absolute; left: 747px; top: 81px; width: 453px; height: calc(670px + var(--dy)); display: flex; flex-direction: column; }
+.stages { position: absolute; left: 723px; top: 81px; width: 477px; height: calc(670px + var(--dy)); display: flex; flex-direction: column; }
 .stage-row { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; gap: 8px; }
 .stage-row > .t-b16 { width: 168px; text-align: right; }
 
-/* 09 and 11 share the right hand column. The rows rise in one after another and the
-   illustration rises in; between these two screens the old column clears first (see go()). */
+/* The 09 rows rise in one after another once the old screen has cleared (see go()). */
 .scene.is-active .stage-row { animation: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--late, 0ms) + 120ms + var(--i) * 70ms); }
-.scene.is-active .hospital-art { animation: rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--late, 0ms) + 120ms); }
 @keyframes rise { from { opacity: 0; transform: translateY(32px); } }
-.scene.is-late { transition-delay: var(--late); }
-.scene.is-leaving.is-quick { opacity: 0; transition: opacity 280ms ease, visibility 0s linear 280ms; }
+.scene.is-active { transition-delay: var(--late, 0ms); }
+.scene.is-leaving { opacity: 0; transition: opacity var(--out) ease, visibility 0s linear var(--out); }
 
-/* ---------- 11 Hospitals ---------- */
-.hospital-art { position: absolute; left: 753px; top: 108px; width: 415px; height: 616px; object-fit: cover; }
+/* ---------- 11 Hospitals ----------
+   The chips start stacked on the middle one, so only the top chip shows. They open out:
+   Hospitals rises 175, AI-ready data drops 175, SOMA capture is revealed, then the labels. */
+.chips { position: absolute; left: 812px; top: 124px; width: 300px; height: 576px; --lift: 175px; }
+.chip-label:nth-of-type(2) { --i: 1; }
+.chip-label:nth-of-type(3) { --i: 2; }
+.chip { position: absolute; left: 0; width: 300px; height: auto; display: block; }
+.chip--hospitals { top: 0; }
+.chip--capture { top: 138px; }
+.chip--data { top: 372px; }
+.chip-label { position: absolute; left: -40px; color: var(--text-muted); white-space: nowrap; }
+.scene.is-active .chips { animation: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--late, 0ms); }
+.scene.is-active .chip--hospitals { animation: chipUp 1000ms cubic-bezier(0.65, 0, 0.35, 1) both; animation-delay: calc(var(--late, 0ms) + 650ms); }
+.scene.is-active .chip--data { animation: chipDown 1000ms cubic-bezier(0.65, 0, 0.35, 1) both; animation-delay: calc(var(--late, 0ms) + 650ms); }
+.scene.is-active .chip--capture { animation: chipShow 1000ms linear both; animation-delay: calc(var(--late, 0ms) + 650ms); }
+.scene.is-active .chip-label { animation: fadeIn 500ms ease both; animation-delay: calc(var(--late, 0ms) + 1550ms + var(--i, 0) * 80ms); }
+@keyframes chipUp { from { transform: translateY(var(--lift)); } }
+@keyframes chipDown { 0% { transform: translateY(calc(var(--lift) * -1)); opacity: 0; } 20% { opacity: 1; } }
+@keyframes chipShow { 0% { opacity: 0; } 25% { opacity: 1; } }
 
 /* ---------- 12 Request ---------- */
 .form { position: absolute; left: 265px; top: 122px; width: 750px; display: flex; flex-direction: column; gap: 24px; }
@@ -394,7 +411,11 @@ button.nav__link:hover { color: var(--paper); }
   .stage-row > .t-b16 { width: auto; font-size: 13px; line-height: 18px; max-width: 45%; }
 
   /* 11 */
-  .hospital-art { left: 50%; top: 76px; width: auto; height: 36svh; transform: translateX(-50%); }
+  .chips { left: 50%; top: 76px; margin-left: -110px; width: 220px; height: 420px; --lift: 128px; }
+  .chip { width: 220px; }
+  .chip--capture { top: 101px; }
+  .chip--data { top: 273px; }
+  .chip-label { display: none; }
 
   /* 12 */
   .form { left: 36px; top: 84px; width: calc(100vw - 72px); max-height: calc(100svh - 120px); overflow-y: auto; gap: 18px; padding-bottom: 24px; }

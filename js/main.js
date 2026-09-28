@@ -10,7 +10,7 @@
   var FORM_ENDPOINT = "";
 
   var LEAVE_MS = 500;
-  var LATE_MS = 320;                     // 09 to 11: how long the old column takes to clear
+  var OUT_MS = 350;                      // how long the old screen takes to clear (--out in style.css)
   var WHEEL_THRESHOLD = 30;
   var SWIPE_THRESHOLD = 50;
 
@@ -20,7 +20,6 @@
   var railList = board.querySelector(".rail__list");
   var last = scenes.length - 1;
   var REQUEST = scenes.findIndex(function (s) { return s.classList.contains("scene--form"); });
-  var SWAP = ["Custom", "Hospitals"].map(function (l) { return scenes.findIndex(function (s) { return s.dataset.label === l; }); });
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var params = new URLSearchParams(location.search);
   if (params.has("still")) stage.classList.add("no-anim");
@@ -45,8 +44,8 @@
       case 1: case 2: case 3: case 4: g.scrim = 1; break;                            // 02 to 05
       case 5: case 6: g.col = 365; g.rows = split(4); g.rx = 1; g.panel = 1; break; // 06, 07
       case 7: g.col = 720 + DX; g.col2 = 960 + DX; break;                           // 08 Delivery
-      case 8: g.scrim = 1; g.col = 746 + DX; g.rows = split(5); g.panel = 1; break; // 09 Custom
-      case 9: g.col = 746 + DX; g.panel = 1; break;                                 // 11 Hospitals
+      case 8: g.scrim = 1; g.col = 722 + DX; g.rows = split(5); g.panel = 1; break; // 09 Custom
+      case 9: g.col = 722 + DX; g.panel = 1; break;                                 // 11 Hospitals
       case 10: g.v1 = 240 + DX / 2; g.v2 = 1040 + DX / 2; g.h1 = 88 + DY / 2; g.fold = 760 + DY / 2; g.noRail = 1; break; // 12 Request
       case 11: g.h1 = 512 + DY; g.noRail = 1; g.backed = 1; break;                  // 13 Footer
     }
@@ -408,13 +407,11 @@
     next = Math.max(0, Math.min(last, next));
     if (next === current || busy) return;
     var from = scenes[current], to = scenes[next], prev = current;
-    scenes.forEach(function (s) { if (s !== from) s.classList.remove("is-leaving", "is-quick"); s.classList.remove("is-late"); });
-    // 09 and 11 share the right hand column: the old column clears first, then the new one rises in.
-    var late = !reduceMotion && ((prev === SWAP[0] && next === SWAP[1]) || (prev === SWAP[1] && next === SWAP[0])) ? LATE_MS : 0;
+    scenes.forEach(function (s) { if (s !== from) s.classList.remove("is-leaving"); });
+    // Never two screens at once: the old footage and copy clear first, then the new ones come in.
+    var late = reduceMotion ? 0 : OUT_MS;
     to.style.setProperty("--late", late + "ms");
     from.classList.remove("is-active"); from.classList.add("is-leaving");
-    from.classList.toggle("is-quick", !!late);
-    to.classList.toggle("is-late", !!late);
     to.classList.add("is-active");
     if (controllers[prev]) controllers[prev].leave();
     current = next;
@@ -422,7 +419,8 @@
     setState();
     showMedia(next, prev);
     if (controllers[next]) controllers[next].enter();
-    setTimeout(function () { from.classList.remove("is-leaving", "is-quick"); busy = false; }, reduceMotion ? 50 : LEAVE_MS + late);
+    setTimeout(function () { from.classList.remove("is-leaving"); }, late + 50);
+    setTimeout(function () { busy = false; }, reduceMotion ? 50 : LEAVE_MS + late);
   }
 
   function setState() {
