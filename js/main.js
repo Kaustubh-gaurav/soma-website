@@ -70,9 +70,15 @@
   var dpr = window.devicePixelRatio || 1;
   function px(v) { return Math.round(v * K * dpr) / dpr; }             // design px to snapped screen px
   var lastCol = 720, lastCol2 = 960, lastRows = [248, 416, 583, 617];
-  function put(el, x, y, sx, sy, o) {
-    el.style.transform = "translate(" + x + "px," + y + "px)" + (sx != null ? " scale(" + sx + "," + sy + ")" : "");
+  // Pieces are sized to their real length (a stretched 1 px square blurs on the GPU) and drawn in
+  // or retracted with a 0 to 1 scale, which rests at 1 so the line stays crisp.
+  function put(el, x, y, o) {
+    el.style.transform = "translate(" + x + "px," + y + "px)";
     if (o != null) el.style.opacity = o;
+  }
+  function seg(el, x, y, w, h, on) {
+    el.style.width = w + "px"; el.style.height = h + "px";
+    el.style.transform = "translate(" + x + "px," + y + "px) scale(" + (w === 1 ? 1 : on) + "," + (h === 1 ? 1 : on) + ")";
   }
 
   function applyGeometry(i) {
@@ -82,18 +88,18 @@
     var X1 = px(g.v1), X2 = px(g.v2), Y1 = px(g.h1), Y2 = px(g.fold), C = px(lastCol), C2 = px(lastCol2);
     var len = Math.max(0, Y2 - Y1), colOn = g.col != null && !g.colHidden ? 1 : 0;
     put(F.v1, X1, 0); put(F.v2, X2, 0); put(F.h1, 0, Y1); put(F.fold, 0, Y2);
-    put(F.col, C, Y1, 1, len * colOn || 0.0001);
-    put(F.col2, C2, Y1, 1, g.col2 != null ? len : 0.0001);
+    seg(F.col, C, Y1, 1, len, colOn);
+    seg(F.col2, C2, Y1, 1, len, g.col2 != null ? 1 : 0);
     var rows = g.rows || [];
     for (var r = 0; r < 4; r++) {
       if (rows[r] != null) lastRows[r] = rows[r];
-      var w = rows[r] != null ? X2 - C : 0.0001;
-      put(F["r" + (r + 1)], X2 - w, px(lastRows[r]), w, 1);
+      seg(F["r" + (r + 1)], C, px(lastRows[r]), Math.max(1, X2 - C), 1, rows[r] != null ? 1 : 0);
     }
     put(F.tl, X1, Y1); put(F.tr, X2, Y1); put(F.bl, X1, Y2); put(F.br, X2, Y2);
-    put(F.ct, C, Y1, null, null, colOn); put(F.cb, C, Y2, null, null, colOn);
-    for (var x = 1; x <= 3; x++) put(F["x" + x], X2, px(lastRows[x - 1]), null, null, g.rx ? 1 : 0);
-    put(panelEl, C + px(1), Y1 + px(1), Math.max(0, X2 - C - px(1)), Math.max(0, len - px(1)), g.panel ? 1 : 0);
+    put(F.ct, C, Y1, colOn); put(F.cb, C, Y2, colOn);
+    for (var x = 1; x <= 3; x++) put(F["x" + x], X2, px(lastRows[x - 1]), g.rx ? 1 : 0);
+    panelEl.style.width = Math.max(0, X2 - C - 1) + "px"; panelEl.style.height = Math.max(0, len - 1) + "px";
+    put(panelEl, C + 1, Y1 + 1, g.panel ? 1 : 0);
     scrimEl.style.opacity = g.scrim ? 1 : 0;
     board.style.setProperty("--logo-x", isPhone ? 36 : g.v1 + 25);
     board.style.setProperty("--nav-x", isPhone ? -36 : g.v2 - 27 - (1280 + DX));
@@ -227,36 +233,20 @@
   var controllers = {};
 
   // 02 Specimen: five layers, each one play of the clip; the underline under the active layer
-  // fills as the clip plays, and the next layer starts when the clip ends. Every layer changes
-  // more than the footage: the readout under the clock, its overlay, and the band's figures.
+  // fills as the clip plays, and the next layer starts when the clip ends. The centre stays clear:
+  // a layer changes the footage, the readout under the clock and the band's figures.
   (function () {
     var scene = scenes[1];
     var raw = stage.querySelector(".spec-vid--raw"), ann = stage.querySelector(".spec-vid--annotated");
     var toggles = Array.prototype.slice.call(scene.querySelectorAll(".toggle"));
-    var layers = Array.prototype.slice.call(scene.querySelectorAll(".spec-layer, .readout__item"));
+    var layers = Array.prototype.slice.call(scene.querySelectorAll(".readout__item"));
     var metrics = scene.querySelector(".metrics");
     var chips = Array.prototype.slice.call(metrics.children);
     var clock = document.getElementById("spec-clock");
-    var capsEl = document.getElementById("spec-captions");
-    var phasesEl = document.getElementById("spec-phases");
-    var NOW = 6;                                           // phase 07 of 11
-    for (var n = 0; n < 11; n++) { var seg = document.createElement("i"); if (n < NOW) seg.className = "is-done"; if (n === NOW) seg.className = "is-now"; phasesEl.appendChild(seg); }
-    var nowSeg = phasesEl.children[NOW];
-    var CAPS = [["00:42:12 · Surgeon", "Prepare the graft."], ["00:42:14 · Assistant", "Graft ready."], ["00:42:16 · Surgeon", "Hold here."]];
-    var layer = 0, active = false, raf = 0, v = raw, capIdx = -1;
+    var layer = 0, active = false, raf = 0, v = raw;
     function videoFor(l) { return l === 1 ? ann : raw; }
-    function caption(i) {
-      capsEl.innerHTML = "";
-      [i - 1, i].forEach(function (j) {
-        if (j < 0) return;
-        var li = document.createElement("li"); if (j < i) li.className = "is-prev";
-        li.innerHTML = '<span class="who t-caps12"></span><span class="said"></span>';
-        li.children[0].textContent = CAPS[j][0]; li.children[1].textContent = CAPS[j][1];
-        capsEl.appendChild(li);
-      });
-    }
     function set(l) {
-      layer = l; capIdx = -1;
+      layer = l;
       var nv = videoFor(l);
       [raw, ann].forEach(function (x) { if (x !== nv) { x.pause(); x.classList.remove("is-shown"); } });
       v = nv; v.classList.add("is-shown");
@@ -267,7 +257,6 @@
       var any = false;
       chips.forEach(function (c) { var on = +c.dataset.for === l; c.classList.toggle("is-hl", on); any = any || on; });
       metrics.classList.toggle("is-focused", any);
-      nowSeg.style.setProperty("--p", 0);
     }
     function tick() {
       if (!active) return;
@@ -276,8 +265,6 @@
       var t = toggles[layer]; if (t) t.style.setProperty("--progress", p.toFixed(4));
       var sec = 12 + Math.floor(v.currentTime);
       clock.textContent = "00:42:" + (sec < 10 ? "0" : "") + sec;
-      if (layer === 3) nowSeg.style.setProperty("--p", p.toFixed(4));
-      if (layer === 4) { var c = Math.min(CAPS.length - 1, Math.floor(p * CAPS.length)); if (c !== capIdx) { capIdx = c; caption(c); } }
       raf = requestAnimationFrame(tick);
     }
     [raw, ann].forEach(function (x) { x.addEventListener("ended", function () { if (active && x === v) set((layer + 1) % toggles.length); }); });
@@ -290,11 +277,14 @@
 
   // 04 Hear: the waveform plays like an audio player (visual only). The playhead crosses it,
   // bars before it light up, and the transcript scrolls so the line being spoken holds its slot.
+  // One clock drives all three: a line becomes current the moment the playhead enters its
+  // speaker's cell, and its timestamp is the time the playhead shows at that moment.
   (function () {
     var barsEl = document.getElementById("wave-bars");
     var ph = document.getElementById("playhead"), phTime = document.getElementById("playhead-time");
     var box = document.getElementById("transcript"), list = box.querySelector(".transcript__list");
     var lines = Array.prototype.slice.call(list.children);
+    var speakers = Array.prototype.slice.call(document.querySelectorAll(".wave__speakers span"));
     var W = 0, BAR = 5, LOOP = 12000, FIRST = 2;           // lines[2] is spoken over the first speaker cell
     var SEG0 = [[0, 321], [321, 643], [643, 954], [954, 1088]];   // speaker cells from Figma, at 1088 wide
     var SEG = SEG0, bars = [];
@@ -324,6 +314,7 @@
         var rel = j - a;
         l.className = rel === 0 ? "is-active" : rel === -1 ? "is-past" : rel === -2 ? "is-far" : rel === 1 ? "is-next" : "";
       });
+      speakers.forEach(function (sp, j) { sp.classList.toggle("is-active", j === idx); });
       if (jump) { box.classList.remove("is-reset"); void box.offsetWidth; box.classList.add("is-reset"); requestAnimationFrame(function () { list.classList.remove("is-jump"); }); }
     }
     function tick(now) {
@@ -349,16 +340,19 @@
   })();
 
   // 05 Understand: the five steps light up in order, and the phase loader moves with them.
+  // Clicking a step jumps to it; the order carries on from there.
   (function () {
-    var steps = Array.prototype.slice.call(document.querySelectorAll("#understand-steps span"));
+    var steps = Array.prototype.slice.call(document.querySelectorAll("#understand-steps .step"));
     var seg = document.getElementById("understand-seg");
     var STEP_MS = 2400, timer = 0, i = 0;
     function show() {
-      steps.forEach(function (s, j) { s.classList.toggle("is-done", j < i); s.classList.toggle("is-active", j === i); });
+      steps.forEach(function (s, j) { s.classList.toggle("is-done", j < i); s.classList.toggle("is-active", j === i); s.setAttribute("aria-pressed", j === i); });
       seg.style.setProperty("--seg", Math.round((270 - 40) * i / (steps.length - 1)) + "px");
     }
+    function run() { clearInterval(timer); timer = setInterval(function () { i = (i + 1) % steps.length; show(); }, STEP_MS); }
+    steps.forEach(function (s, j) { s.addEventListener("click", function () { i = j; show(); run(); }); });
     controllers[4] = {
-      enter: function () { i = 0; show(); clearInterval(timer); timer = setInterval(function () { i = (i + 1) % steps.length; show(); }, STEP_MS); },
+      enter: function () { i = 0; show(); run(); },
       leave: function () { clearInterval(timer); }
     };
   })();

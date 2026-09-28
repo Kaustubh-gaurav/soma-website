@@ -92,9 +92,9 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
   background: linear-gradient(180deg, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 0.6) 100%), rgb(0 0 0 / 0.4); }
 
 /* A 1 x 1 square scaled to the column, so it moves on the compositor */
-.panel { position: absolute; left: 0; top: 0; width: 1px; height: 1px; z-index: 4; pointer-events: none; opacity: 0;
-  background: var(--fill-panel); transform-origin: 0 0; will-change: transform;
-  transition: transform var(--slide) var(--ease), opacity var(--slide) ease; }
+.panel { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 4; pointer-events: none; opacity: 0;
+  background: var(--fill-panel);
+  transition: transform var(--slide) var(--ease), width var(--slide) var(--ease), height var(--slide) var(--ease), opacity var(--slide) ease; }
 
 /* ---------- Board ----------
    Screens are drawn at 1280 x 832 and scaled by --k, the smaller of the two fits. The board then
@@ -139,15 +139,16 @@ button.nav__link:hover { color: var(--paper); }
 
 /* ---------- Frame ----------
    Rules, column rules, row rules and crosses sit at 0,0 and are moved by main.js with
-   translate and scale, snapped to device pixels. Column and row rules are 1 x 1 squares scaled
-   to their length, so they draw in and retract. */
+   translate, snapped to device pixels. Column and row rules take their real length and draw in
+   or retract with a 0 to 1 scale. */
 .frame { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
-.frame > * { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform;
-  transition: transform var(--slide) var(--ease), opacity var(--slide) var(--ease); }
+.frame > * { position: absolute; left: 0; top: 0; transform-origin: 0 0;
+  transition: transform var(--slide) var(--ease), width var(--slide) var(--ease), height var(--slide) var(--ease), opacity var(--slide) var(--ease); }
+.frame > [data-f^="r"] { transform-origin: 100% 0; }
 .rule { background: var(--rule); }
 .rule--v { width: 1px; height: 100%; }
 .rule--h { height: 1px; width: 100%; }
-.rule--s { width: 1px; height: 1px; }
+.rule--s { width: 1px; height: 0; }
 .rule--faint { background: var(--rule-faint); }
 
 .cross { position: absolute; width: 0; height: 0; }
@@ -184,42 +185,15 @@ button.nav__link:hover { color: var(--paper); }
 .keys li { display: flex; align-items: center; gap: 8px; color: var(--paper); }
 .keys i { width: 8px; height: 8px; background: var(--sw); flex: none; }
 
-/* Overlays on the footage */
-.spec-layer { position: absolute; inset: 0; opacity: 0; transition: opacity 350ms ease; pointer-events: none; }
-.spec-layer.is-on { opacity: 1; }
-.anatomy-shape { position: absolute; left: 450px; top: 322px; width: 360px; height: 170px; overflow: visible; }
-.anatomy-shape--b { left: 700px; top: 470px; width: 200px; height: 110px; }
-.anatomy-shape ellipse, .anatomy-shape path { fill: rgb(242 241 237 / 0.12); stroke: var(--paper); stroke-width: 1.5; stroke-dasharray: 6 4; animation: march 1.2s linear infinite; }
-.anatomy-shape--b path { fill: rgb(154 153 150 / 0.16); stroke: var(--text-muted); }
-@keyframes march { to { stroke-dashoffset: -20; } }
-.tag { position: absolute; padding: 3px 6px; background: var(--overlay-label); color: var(--paper); white-space: nowrap; }
-
-.spec-layer--phase { left: 105px; top: 560px; right: auto; bottom: auto; width: 560px; }
-.phases { display: flex; gap: 4px; margin-top: 16px; }
-.phases i { flex: 1 1 0; height: 3px; background: rgb(242 241 237 / 0.2); position: relative; overflow: hidden; }
-.phases i.is-done { background: rgb(242 241 237 / 0.6); }
-.phases i.is-now::after { content: ""; position: absolute; inset: 0; background: var(--paper); transform: scaleX(var(--p, 0)); transform-origin: 0 50%; }
-.phases__legend { display: flex; justify-content: space-between; margin-top: 8px; }
-.phases__legend span:nth-child(2) { color: var(--paper); }
-
-.spec-layer--transcript { left: 0; right: 0; top: 560px; bottom: auto; }
-.captions { list-style: none; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-.captions li { display: flex; flex-direction: column; align-items: center; gap: 4px; animation: capIn 400ms ease both; }
-.captions li .who { color: var(--text-secondary); }
-.captions li .said { font-size: 24px; line-height: 32px; font-weight: 500; letter-spacing: -0.5px; }
-.captions li.is-prev { opacity: 0.4; }
-.captions li.is-prev .said { font-size: 16px; line-height: 22px; font-weight: 400; }
-@keyframes capIn { from { opacity: 0; transform: translateY(12px); } }
-
 /* ---------- 04 Hear ----------
    The transcript scrolls with the audio: the line being spoken holds the third slot, earlier
    lines move up and fade, the next line waits below. Row pitch 58 (42 + 16), as in Figma. */
 .transcript { position: absolute; right: 80px; top: 105px; width: 320px; height: 216px; overflow: hidden; }
 .transcript__list { list-style: none; display: flex; flex-direction: column; gap: 16px; align-items: flex-end;
-  transform: translateY(calc(var(--row, 0) * -58px)); transition: transform 700ms var(--ease); }
+  transform: translateY(calc(var(--row, 0) * -58px)); transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1); }
 .transcript__list.is-jump { transition: none; }
 .transcript li { position: relative; height: 42px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding-right: 20px;
-  color: var(--placeholder); opacity: 0; transition: color 500ms ease, opacity 500ms ease; }
+  color: var(--placeholder); opacity: 0; transition: color 300ms ease, opacity 300ms ease; }
 .transcript .line { font-size: 16px; line-height: 22px; font-weight: 400; letter-spacing: -0.5px; }
 .transcript .tick { position: absolute; right: 0; top: 7px; width: 8px; height: 1px; background: var(--rail-inactive); transition: background-color 500ms ease; }
 .transcript li.is-far { opacity: 1; color: var(--text-disabled); }
@@ -231,7 +205,8 @@ button.nav__link:hover { color: var(--paper); }
 
 .wave { position: absolute; left: 97px; top: 770px; width: calc(1088px + var(--dx)); }
 .wave__speakers { display: flex; }
-.wave__speakers span { flex: none; }
+.wave__speakers span { flex: none; transition: color 250ms ease; }
+.wave__speakers span.is-active { color: var(--paper); }
 .wave__bars { height: 26px; margin-top: 2px; display: flex; align-items: center; gap: 3px; }
 .wave__bars i { flex: none; width: 2px; background: var(--text-disabled); }
 .wave__bars i.is-played { background: var(--paper); }
@@ -245,9 +220,9 @@ button.nav__link:hover { color: var(--paper); }
 .phase-track i { position: absolute; left: 0; top: 0; width: 40px; height: 3px; background: var(--paper); transform: translateX(var(--seg, 0px)); transition: transform 600ms var(--ease); }
 .phase-track--wide { margin-top: 4px; }
 .steps { top: 782px; gap: 32px; }
-.steps span { color: var(--text-disabled); transition: color 300ms ease; }
-.steps span.is-done { color: var(--text-secondary); }
-.steps span.is-active { color: var(--paper); }
+.steps .step { color: var(--text-disabled); transition: color 300ms ease; }
+.steps .step.is-done { color: var(--text-secondary); }
+.steps .step.is-active, .steps .step:hover { color: var(--paper); }
 
 /* ---------- 06 and 07 rows ---------- */
 /* Column rule at 365 on both, as in Figma; the rows share the height between the rules */
@@ -383,14 +358,8 @@ button.nav__link:hover { color: var(--paper); }
   .toggles { left: 36px; top: auto; bottom: 120px; width: calc(100vw - 56px); overflow-x: auto; gap: 22px; padding-bottom: 4px; scrollbar-width: none; }
   .toggles::-webkit-scrollbar { display: none; }
   .toggle { flex: none; }
+  .readout { display: none; }
   .scene--specimen .band .metrics { display: none; }
-  .anatomy-shape { left: 50%; top: 38%; width: 240px; height: 120px; transform: translateX(-50%); }
-  .spec-layer--anatomy .tag { left: 36px !important; top: calc(38% - 28px) !important; }
-  .spec-layer--phase { left: 36px; top: auto; bottom: 170px; width: calc(100vw - 72px); }
-  .spec-layer--phase .t-title { font-size: 22px; }
-  .phases__legend span:nth-child(2) { display: none; }
-  .readout, .anatomy-shape--b, .spec-layer--anatomy .tag + .tag { display: none; }
-  .spec-layer--transcript { top: auto; bottom: 170px; }
 
   /* 03 */
   .media--tl { inset: 0 0 66.66% 0; }
@@ -405,8 +374,8 @@ button.nav__link:hover { color: var(--paper); }
 
   /* 05 */
   .phase-box { left: auto; right: 36px; top: 76px; width: 190px; }
-  .steps span { display: none; }
-  .steps span.is-active { display: inline; }
+  .steps { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+  .steps .step { flex: none; }
 
   /* 06, 07 */
   .rows { left: 20px; top: 65px; width: calc(100vw - 40px); height: calc(100svh - 161px); }

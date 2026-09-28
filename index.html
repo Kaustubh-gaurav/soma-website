@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#000000">
   <link rel="preload" href="assets/fonts/Satoshi-Medium.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="assets/video/01-home.jpg?v=4" as="image">
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
   <main class="stage" id="stage">
@@ -69,23 +69,6 @@
           <div class="readout__item" data-layer="4"><div class="t-caps12 c-muted">Audio</div><div class="t-b16m">3 speakers</div><div class="t-b14 c-sec">Diarized and time aligned</div></div>
         </div>
 
-        <!-- Overlays on the footage, one per layer -->
-        <div class="spec-layer spec-layer--anatomy ac" data-layer="2">
-          <svg class="anatomy-shape" viewBox="0 0 360 170" aria-hidden="true"><ellipse cx="180" cy="85" rx="176" ry="80" /></svg>
-          <svg class="anatomy-shape anatomy-shape--b" viewBox="0 0 200 110" aria-hidden="true"><path d="M8 70 C40 20 120 10 192 40 C170 80 90 104 8 70 Z" /></svg>
-          <span class="tag t-caps12" style="left:470px;top:300px">Coronary artery</span>
-          <span class="tag t-caps12" style="left:760px;top:474px">Graft vessel</span>
-        </div>
-        <div class="spec-layer spec-layer--phase ay" data-layer="3">
-          <div class="t-caps12 c-muted">Procedure phase</div>
-          <div class="t-title" style="margin-top:8px">Distal Anastomosis</div>
-          <div class="phases" id="spec-phases"></div>
-          <div class="phases__legend t-caps12 c-muted"><span>01 Access</span><span>07 Distal Anastomosis</span><span>11 Closure</span></div>
-        </div>
-        <div class="spec-layer spec-layer--transcript ay" data-layer="4">
-          <ol class="captions" id="spec-captions"></ol>
-        </div>
-
         <div class="toggles ay" role="tablist" aria-label="Dataset layers">
           <button class="toggle" role="tab" data-layer="0"><span class="toggle__label">Raw</span><span class="toggle__bar"><i></i></span></button>
           <button class="toggle" role="tab" data-layer="1"><span class="toggle__label">Instruments</span><span class="toggle__bar"><i></i></span></button>
@@ -124,9 +107,9 @@
             <li><span class="t-caps12">00:42:09 · Nurse</span><span class="line">Suction ready.</span><i class="tick"></i></li>
             <li><span class="t-caps12">00:42:12 · Surgeon</span><span class="line">Prepare the graft.</span><i class="tick"></i></li>
             <li><span class="t-caps12">00:42:15 · Assistant</span><span class="line">Graft ready.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:18 · Surgeon</span><span class="line">Hold here.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:21 · Nurse</span><span class="line">Irrigation ready.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:24 · Surgeon</span><span class="line">Next suture.</span><i class="tick"></i></li>
+            <li><span class="t-caps12">00:42:19 · Surgeon</span><span class="line">Hold here.</span><i class="tick"></i></li>
+            <li><span class="t-caps12">00:42:22 · Nurse</span><span class="line">Irrigation ready.</span><i class="tick"></i></li>
+            <li><span class="t-caps12">00:42:25 · Surgeon</span><span class="line">Next suture.</span><i class="tick"></i></li>
           </ol>
         </div>
         <div class="wave ay">
@@ -152,11 +135,11 @@
           <h2 class="t-display" style="width:809px">From footage to machine-understandable surgery.</h2>
         </div>
         <div class="band steps ay" id="understand-steps" style="left:105px">
-          <span class="t-caps12">Raw footage</span>
-          <span class="t-caps12">Instrument identified</span>
-          <span class="t-caps12">Anatomy identified</span>
-          <span class="t-caps12">Action identified</span>
-          <span class="t-caps12">Procedure phase understood</span>
+          <button type="button" class="step t-caps12">Raw footage</button>
+          <button type="button" class="step t-caps12">Instrument identified</button>
+          <button type="button" class="step t-caps12">Anatomy identified</button>
+          <button type="button" class="step t-caps12">Action identified</button>
+          <button type="button" class="step t-caps12">Procedure phase understood</button>
         </div>
       </section>
 
@@ -336,6 +319,6 @@
     </div>
   </main>
 
-  <script src="js/main.js?v=5"></script>
+  <script src="js/main.js?v=6"></script>
 </body>
 </html>
