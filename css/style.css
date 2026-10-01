@@ -372,6 +372,7 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 .loader { position: absolute; inset: 0; z-index: 10; background: var(--black); --p: 0; transition: opacity 700ms ease, visibility 0s linear 700ms;
   --lv1: 80; --lv2: 1200; --lh1: 80; --lfold: 751; }
 .loader.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
+.loaded-once .loader { display: none; }                  /* the loader runs once per visit */
 .seg { position: absolute; background: var(--white-muted); opacity: 0.66; will-change: transform; }
 .seg--h { height: 1px; transform: scaleX(var(--p)); }
 .seg--v { width: 1px; transform: scaleY(var(--p)); }

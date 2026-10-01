@@ -647,24 +647,29 @@
   }
 
   // Loader: the rules grow out of the four crosses while a count runs to 100.
-  var LOADER_MS = 2200, LOADER_MAX_MS = 10000;
+  // Short by design: about 1.4 s, never more than 4 s, and only once per visit (the second page,
+  // Home or For Hospitals, skips it; the head script hides it before first paint).
+  var LOADER_MS = 1400, LOADER_MAX_MS = 4000;
+  var SEEN = "soma-loaded", seen = false;
+  try { seen = sessionStorage.getItem(SEEN) === "1"; } catch (e) {}
   var countEl = document.getElementById("loader-count");
   var firstVideos = videosIn(mediaFor(current));
   firstVideos.forEach(function (v) { v.preload = "auto"; });
   var fontsDone = false;
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fontsDone = true; }); else fontsDone = true;
-  function assetsReady() { return fontsDone && firstVideos.every(function (v) { return v.readyState >= 3; }); }
+  function assetsReady() { return fontsDone && firstVideos.every(function (v) { return v.readyState >= 2; }); }   // first frame is enough
   function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
 
-  if (params.has("noload") || reduceMotion) { loader.classList.add("is-done"); begin(); }
+  if (params.has("noload") || reduceMotion || seen) { loader.classList.add("is-done"); begin(); }
   else {
     var t0 = performance.now(), shown = 0, finished = false;
     var finish = function () {
       if (finished) return; finished = true;
+      try { sessionStorage.setItem(SEEN, "1"); } catch (e) {}
       loader.style.setProperty("--p", "1"); countEl.textContent = "100"; loader.setAttribute("aria-valuenow", 100);
       setTimeout(function () { loader.classList.add("is-done"); begin(); }, 250);
     };
-    setTimeout(finish, LOADER_MAX_MS + 1000);
+    setTimeout(finish, LOADER_MAX_MS + 500);
     (function tick(now) {
       if (finished) return;
       var elapsed = now - t0, curve = easeOutCubic(Math.min(1, elapsed / LOADER_MS)), goal;
