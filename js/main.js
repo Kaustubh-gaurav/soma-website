@@ -11,7 +11,7 @@
 
   var LEAVE_MS = 500;
   var OUT_MS = 350;                      // how long the old screen takes to clear (--out in style.css)
-  var WHEEL_THRESHOLD = 30;
+  var WHEEL_THRESHOLD = 60;
   var SWIPE_THRESHOLD = 50;
 
   var stage = document.getElementById("stage");
@@ -508,17 +508,17 @@
   // ---------- Input ----------
   // Scroll moves by stride and speed. A gesture is every wheel event until the wheel has been quiet
   // for 200 ms. A small scroll moves one section; every further STRIDE of travel adds one, and a
-  // fast flick adds one or two more. The move is decided 120 ms in (or as soon as the wheel goes
+  // really fast flick adds one more. The move is decided 120 ms in (or as soon as the wheel goes
   // quiet), so a big scroll jumps straight to its section instead of stepping through each one;
   // if the same gesture keeps going, the extra sections are added once the current move lands.
-  var STRIDE = 360, QUIET_MS = 200, DECIDE_MS = 120;
+  var STRIDE = 700, QUIET_MS = 200, DECIDE_MS = 120;
   var gest = null, pendingTo = null, quietTimer = 0, decideTimer = 0;
   function stepsFor(g) {
     var dist = Math.abs(g.sum);
     if (dist < WHEEL_THRESHOLD) return 0;
     var n = 1 + Math.floor(Math.max(0, dist - WHEEL_THRESHOLD) / STRIDE);
     var speed = g.peak;                                     // px per ms over the fastest 100 ms
-    if (dist > 2 * WHEEL_THRESHOLD) n += speed > 4 ? 2 : speed > 2 ? 1 : 0;
+    if (dist > 4 * WHEEL_THRESHOLD && speed > 6) n += 1;    // only a really fast flick earns a bonus
     return n;
   }
   function wheelTarget() {
