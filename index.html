@@ -9,7 +9,7 @@
   <link rel="preload" href="assets/fonts/Satoshi-Bold.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="assets/fonts/Manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/video/01-home.jpg?v=4" as="image">
-  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body>
   <main class="stage" id="stage">
@@ -107,31 +107,17 @@
         <div class="head ay" style="left:105px;top:525px">
           <h2 class="t-display" style="width:1000px">Every voice. Every command. In context.</h2>
         </div>
-        <div class="transcript" id="transcript">
+        <div class="transcript" id="transcript" data-from="60000" data-loop="10000">
           <ol class="transcript__list">
-            <li><span class="t-caps12">00:42:10 · Surgeon</span><span class="line">Retract there.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:11 · Nurse</span><span class="line">Clamp is on.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:12 · Surgeon</span><span class="line">Prepare the graft.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:13 · Surgeon</span><span class="line">Check the length.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:15 · Assistant</span><span class="line">Graft ready.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:17 · Assistant</span><span class="line">Length is good.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:19 · Surgeon</span><span class="line">Hold here.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:20 · Surgeon</span><span class="line">Suture now.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:22 · Nurse</span><span class="line">Suction ready.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:23 · Nurse</span><span class="line">Irrigation ready.</span><i class="tick"></i></li>
-            <li><span class="t-caps12">00:42:24 · Surgeon</span><span class="line">Next suture.</span><i class="tick"></i></li>
+            <li data-at="61070" data-end="65370"><span class="t-caps12">00:01:01 · Speaker 2</span><span class="line">Because there will be a little more pressure, it is preferable to tie.</span><i class="tick"></i></li>
+            <li data-at="66910" data-end="68670"><span class="t-caps12">00:01:06 · Speaker 2</span><span class="line">That is an arterial feeder.</span><i class="tick"></i></li>
           </ol>
         </div>
         <div class="wave ay">
-          <div class="wave__speakers">
-            <span class="t-caps12 c-muted" style="width:29.5%">Surgeon</span>
-            <span class="t-caps12 c-muted" style="width:29.6%">Assistant</span>
-            <span class="t-caps12 c-muted" style="width:28.6%">Surgeon</span>
-            <span class="t-caps12 c-muted" style="width:12.3%">Nurse</span>
-          </div>
+          <div class="wave__speakers" id="wave-speakers"></div>
           <div class="wave__bars" id="wave-bars"></div>
         </div>
-        <div class="playhead ay" id="playhead"><span class="playhead__time t-cap12" id="playhead-time">00:42:12</span></div>
+        <div class="playhead ay" id="playhead"><span class="playhead__time t-cap12" id="playhead-time">00:01:00</span></div>
       </section>
 
       <!-- 05 Understand -->
@@ -298,6 +284,6 @@
     </div>
   </main>
 
-  <script src="js/main.js?v=10"></script>
+  <script src="js/main.js?v=11"></script>
 </body>
 </html>

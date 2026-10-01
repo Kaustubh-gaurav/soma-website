@@ -202,26 +202,24 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 .keys i { width: 8px; height: 8px; background: var(--sw); flex: none; }
 
 /* ---------- 04 Hear ----------
-   The transcript scrolls with the audio: the line being spoken holds the third slot, earlier
-   lines move up and fade, the next line waits below. Row pitch 58 (42 + 16), as in Figma. */
-.transcript { position: absolute; right: 80px; top: 105px; width: 320px; height: 216px; overflow: hidden; }
-.transcript__list { list-style: none; display: flex; flex-direction: column; gap: 16px; align-items: flex-end;
-  transform: translateY(calc(var(--row, 0) * -58px)); transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1); }
-.transcript__list.is-jump { transition: none; }
-.transcript li { position: relative; height: 42px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding-right: 20px;
-  color: var(--white-muted); opacity: 0; transition: color 300ms ease, opacity 300ms ease; }
+   A 10 s window of the recording. Both lines sit in the right column; the one being spoken is
+   white and its words light as the playhead passes them, lines already said stay sub. */
+.transcript { position: absolute; right: 80px; top: 105px; width: 360px; }
+.transcript__list { list-style: none; display: flex; flex-direction: column; gap: 24px; align-items: flex-end; }
+.transcript li { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding-right: 20px; text-align: right; color: var(--white-muted); transition: color 300ms ease; }
 .transcript .line { font-size: 16px; line-height: 22px; font-weight: 700; letter-spacing: -0.5px; }
-.transcript .tick { position: absolute; right: 0; top: 7px; width: 8px; height: 1px; background: var(--white-muted); transition: background-color 500ms ease; }
-.transcript li.is-far { opacity: 0.6; color: var(--white-muted); }
-.transcript li.is-past, .transcript li.is-next { opacity: 1; color: var(--white-muted); }
-.transcript li.is-active { opacity: 1; color: var(--white); }
+.transcript .line span { transition: color 200ms ease; }
+.transcript .tick { position: absolute; right: 0; top: 7px; width: 8px; height: 1px; background: var(--white-muted); transition: background-color 300ms ease; }
+.transcript li.is-past { color: var(--white-sub); }
+.transcript li.is-active { color: var(--white); }
+.transcript li.is-active .line span { color: var(--white-muted); }
+.transcript li.is-active .line span.is-lit { color: var(--white); }
 .transcript li.is-active .tick { background: var(--white); }
-.transcript.is-reset { animation: fadeIn 500ms ease; }
 @keyframes fadeIn { from { opacity: 0; } }
 
 .wave { position: absolute; left: 97px; top: 770px; width: calc(1088px + var(--dx)); }
-.wave__speakers { display: flex; }
-.wave__speakers span { flex: none; transition: color 250ms ease; }
+.wave__speakers { position: relative; height: 16px; }
+.wave__speakers span { position: absolute; top: 0; white-space: nowrap; color: var(--white-muted); transition: color 250ms ease; }
 .wave__speakers span.is-active { color: var(--white); }
 .wave__bars { height: 26px; margin-top: 2px; display: flex; align-items: center; gap: 3px; }
 .wave__bars i { flex: none; width: 2px; background: var(--white-muted); }

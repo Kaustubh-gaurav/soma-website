@@ -308,67 +308,76 @@
   })();
   function sceneOf(el) { return el ? scenes.indexOf(el.closest(".scene")) : -1; }
 
-  // 04 Hear: the waveform plays like an audio player (visual only). The playhead crosses it,
-  // bars before it light up, and the transcript scrolls so the line being spoken holds its slot.
-  // One clock drives all three: each speaker's cell holds two lines, a line becomes current the
-  // moment the playhead reaches it, and its timestamp is the time the playhead shows then.
+  // 04 Hear: an audio player for a real 10 s window of the recording (01:00 to 01:10). The lines in
+  // the transcript carry their own start and end times; the waveform only has speech where a line
+  // is spoken, with the speaker named above that stretch. The playhead crosses it, bars before it
+  // light up, and the words of the line being spoken light one by one as the playhead passes them.
   if (document.getElementById("wave-bars")) (function () {
-    var barsEl = document.getElementById("wave-bars");
+    var barsEl = document.getElementById("wave-bars"), spk = document.getElementById("wave-speakers");
     var ph = document.getElementById("playhead"), phTime = document.getElementById("playhead-time");
-    var box = document.getElementById("transcript"), list = box.querySelector(".transcript__list");
-    var lines = Array.prototype.slice.call(list.children);
-    var speakers = Array.prototype.slice.call(document.querySelectorAll(".wave__speakers span"));
-    var W = 0, BAR = 5, LOOP = 12000, FIRST = 2;           // lines[2] is spoken over the first speaker cell
-    var SEG0 = [[0, 321], [321, 643], [643, 954], [954, 1088]];   // speaker cells from Figma, at 1088 wide
-    var SEG = SEG0, bars = [];
-    var active = false, raf = 0, t0 = 0, lastIdx = -1, lastBar = -1;
+    var box = document.getElementById("transcript");
+    var FROM = +box.dataset.from || 0, LOOP = +box.dataset.loop || 10000;
+    var lines = Array.prototype.slice.call(box.querySelectorAll("li")).map(function (li) {
+      var line = li.querySelector(".line");
+      var words = line.textContent.trim().split(/\s+/);
+      line.innerHTML = words.map(function (w) { return "<span>" + w + "</span>"; }).join(" ");
+      var who = li.querySelector(".t-caps12").textContent.split("·").pop().trim();
+      return { li: li, words: Array.prototype.slice.call(line.children), at: +li.dataset.at - FROM, end: +li.dataset.end - FROM, who: who };
+    });
+    var labels = lines.map(function (l) {                   // speaker name over the stretch they speak
+      var s = document.createElement("span");
+      s.className = "t-caps12";
+      s.textContent = l.who;
+      s.style.left = (l.at / LOOP * 100).toFixed(2) + "%";
+      s.style.width = ((l.end - l.at) / LOOP * 100).toFixed(2) + "%";
+      spk.appendChild(s); return s;
+    });
+    var W = 0, BAR = 5, bars = [];
+    var active = false, raf = 0, t0 = 0, lastBar = -1;
     rebuildWave = function () {
       var w = barsEl.offsetWidth || 1088;
       if (bars.length && Math.abs(w - W) < 2) return;
       W = w;
-      var f = W / 1088;
-      SEG = SEG0.map(function (s) { return [s[0] * f, s[1] * f]; });
       barsEl.innerHTML = ""; bars = []; lastBar = -1;
       var N = Math.floor(W / BAR);
       for (var i = 0; i < N; i++) {
-        var x = i * BAR, inSeg = SEG.some(function (s) { return x >= s[0] + 8 && x < s[1] - 30 * f; });
-        var speech = inSeg && Math.sin(i * 0.19) > -0.35;
+        var ms = (i * BAR + 1) / W * LOOP;
+        var inLine = lines.some(function (l) { return ms >= l.at && ms < l.end; });
+        var speech = inLine && Math.sin(i * 0.23) > -0.55;  // short gaps between words
         var h = speech ? 6 + Math.abs(Math.sin(i * 1.7)) * 12 + Math.abs(Math.sin(i * 0.37)) * 8 : 2;
         var b = document.createElement("i"); b.style.height = Math.round(h) + "px";
         barsEl.appendChild(b); bars.push(b);
       }
     };
     rebuildWave();
-    function speak(idx, jump) {
-      var a = FIRST + idx;                                  // the active line sits in the third slot
-      list.classList.toggle("is-jump", !!jump);
-      list.style.setProperty("--row", a - 2);
-      lines.forEach(function (l, j) {
-        var rel = j - a;
-        l.className = rel === 0 ? "is-active" : rel === -1 ? "is-past" : rel === -2 ? "is-far" : rel === 1 ? "is-next" : "";
-      });
-      speakers.forEach(function (sp, j) { sp.classList.toggle("is-active", j === Math.floor(idx / 2)); });
-      if (jump) { box.classList.remove("is-reset"); void box.offsetWidth; box.classList.add("is-reset"); requestAnimationFrame(function () { list.classList.remove("is-jump"); }); }
+    function stamp(ms) {
+      var s = Math.floor((FROM + ms) / 1000), m = Math.floor(s / 60) % 60, h = Math.floor(s / 3600);
+      s = s % 60;
+      return [h, m, s].map(function (n) { return (n < 10 ? "0" : "") + n; }).join(":");
     }
     function tick(now) {
       if (!active) return;
-      var t = ((now - t0) % LOOP) / LOOP, x = t * W;
+      var ms = (now - t0) % LOOP, x = ms / LOOP * W;
       ph.style.transform = "translateX(" + x.toFixed(1) + "px)";
-      var sec = 12 + Math.floor(t * 12);
-      phTime.textContent = "00:42:" + (sec < 10 ? "0" : "") + sec;
+      phTime.textContent = stamp(ms);
       var upto = Math.floor(x / BAR);
       if (upto !== lastBar) {
         if (upto < lastBar) { for (var j = 0; j < bars.length; j++) bars[j].classList.toggle("is-played", j <= upto); }
         else for (var k = Math.max(0, lastBar + 1); k <= upto && k < bars.length; k++) bars[k].classList.add("is-played");
         lastBar = upto;
       }
-      var cell = SEG.findIndex(function (s) { return x >= s[0] && x < s[1]; });
-      var idx = cell < 0 ? -1 : cell * 2 + (x >= (SEG[cell][0] + SEG[cell][1]) / 2 ? 1 : 0);
-      if (idx !== lastIdx && idx > -1) { speak(idx, idx < lastIdx || lastIdx === -1); lastIdx = idx; }
+      lines.forEach(function (l, j) {
+        var now_ = ms >= l.at && ms < l.end, done = ms >= l.end;
+        l.li.classList.toggle("is-active", now_);
+        l.li.classList.toggle("is-past", done);
+        labels[j].classList.toggle("is-active", now_);
+        var lit = done ? l.words.length : now_ ? Math.ceil((ms - l.at) / (l.end - l.at) * l.words.length) : 0;
+        l.words.forEach(function (w, k) { w.classList.toggle("is-lit", k < lit); });
+      });
       raf = requestAnimationFrame(tick);
     }
     controllers[sceneOf(barsEl)] = {
-      enter: function () { active = true; t0 = performance.now(); lastIdx = -1; lastBar = -1; bars.forEach(function (b) { b.classList.remove("is-played"); }); raf = requestAnimationFrame(tick); },
+      enter: function () { active = true; t0 = performance.now(); lastBar = -1; bars.forEach(function (b) { b.classList.remove("is-played"); }); raf = requestAnimationFrame(tick); },
       leave: function () { active = false; cancelAnimationFrame(raf); }
     };
   })();
