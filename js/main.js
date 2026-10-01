@@ -264,27 +264,26 @@
   // ---------- Section controllers ----------
   var controllers = {};
 
-  // A transcript column: each line carries its start and end (ms, on its video's clock, offset by
-  // data-from). The line being spoken is white and its words light as the clock passes them;
-  // lines already said stay sub, lines still to come stay muted.
+  // A transcript column, as in Figma: each line carries its start and end (ms, on its video's
+  // clock, offset by data-from). The current line is the latest one to have started; it is white,
+  // the lines either side of it are soft and the rest dim. Before the first line, it is next.
   function transcriptOf(box) {
     var from = +box.dataset.from || 0;
     var lines = Array.prototype.slice.call(box.querySelectorAll("li")).map(function (li) {
-      var line = li.querySelector(".line");
-      var words = line.textContent.trim().split(/\s+/);
-      line.innerHTML = words.map(function (w) { return "<span>" + w + "</span>"; }).join(" ");
       var who = li.querySelector(".t-caps12").textContent.split("·");
-      return { li: li, words: Array.prototype.slice.call(line.children), at: +li.dataset.at - from, end: +li.dataset.end - from, who: who.length > 1 ? who.pop().trim() : "" };
+      return { li: li, at: +li.dataset.at - from, end: +li.dataset.end - from, who: who.length > 1 ? who.pop().trim() : "" };
     });
+    var last = -2;
     return {
       from: from, lines: lines,
       update: function (ms) {
-        lines.forEach(function (l) {
-          var on = ms >= l.at && ms < l.end, done = ms >= l.end;
-          l.li.classList.toggle("is-active", on);
-          l.li.classList.toggle("is-past", done);
-          var lit = done ? l.words.length : on ? Math.ceil((ms - l.at) / (l.end - l.at) * l.words.length) : 0;
-          l.words.forEach(function (w, k) { w.classList.toggle("is-lit", k < lit); });
+        var cur = -1;
+        lines.forEach(function (l, j) { if (ms >= l.at) cur = j; });
+        if (cur === last) return;
+        last = cur;
+        lines.forEach(function (l, j) {
+          l.li.classList.toggle("is-active", j === cur);
+          l.li.classList.toggle("is-near", cur < 0 ? j === 0 : Math.abs(j - cur) === 1);
         });
       }
     };

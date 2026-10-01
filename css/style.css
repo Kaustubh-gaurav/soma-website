@@ -203,21 +203,18 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 .said li.is-now { color: var(--white); }
 .keys i { width: 8px; height: 8px; background: var(--sw); flex: none; }
 
-/* ---------- 04 Hear ----------
-   A 10 s window of the recording. Both lines sit in the right column; the one being spoken is
-   white and its words light as the playhead passes them, lines already said stay sub. */
+/* ---------- 04 Hear (and the Specimen transcript) ----------
+   As in Figma: every line the same size, right aligned to 1180 with an 8 px tick on the rule.
+   The current line is white, its neighbours soft, the rest dim; rows 16 apart (pitch 58). */
 .transcript { position: absolute; right: 80px; top: 105px; width: 360px; }
-.transcript__list { list-style: none; display: flex; flex-direction: column; gap: 24px; align-items: flex-end; }
-.transcript li { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding-right: 20px; text-align: right; color: var(--white-muted);
-  transform: scale(0.8); transform-origin: 100% 0; transition: color 300ms ease, transform 450ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-/* Every line is there from the start, small and muted; the one being spoken pops up to full size */
-.transcript li.is-active { transform: none; }
+.transcript__list { list-style: none; display: flex; flex-direction: column; gap: 16px; align-items: flex-end; }
+.transcript li { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding-right: 20px; text-align: right;
+  color: #636260; transition: color 300ms ease; }                                  /* Figma: dim */
+.transcript .t-caps12 { line-height: 16px; }
 .transcript .line { font-size: 16px; line-height: 22px; font-weight: 700; letter-spacing: -0.5px; }
-.transcript .line span { transition: color 200ms ease; }
-.transcript .tick { position: absolute; right: 0; top: 7px; width: 8px; height: 1px; background: var(--white-muted); transition: background-color 300ms ease; }
+.transcript .tick { position: absolute; right: 0; top: 8px; width: 8px; height: 1px; background: #ECECEC; transition: background-color 300ms ease; }
+.transcript li.is-near { color: #7F7E7B; }                                         /* Figma: soft */
 .transcript li.is-active { color: var(--white); }
-.transcript li.is-active .line span { color: var(--white-muted); }
-.transcript li.is-active .line span.is-lit { color: var(--white); }
 .transcript li.is-active .tick { background: var(--white); }
 @keyframes fadeIn { from { opacity: 0; } }
 
