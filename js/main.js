@@ -265,9 +265,9 @@
   var controllers = {};
 
   // A transcript column, as in Figma: each line carries its start and end (ms, on its video's
-  // clock, offset by data-from). A line is big and white only while it is being said, the same in
-  // every transcript. The lines next to the latest one said are soft, the rest dim; before the
-  // first line, the first is soft.
+  // clock, offset by data-from). A line pops up (big and white) when it starts and stays up until
+  // the next line takes its place, the same in every transcript. The lines next to it are soft,
+  // the rest dim; before the first line, the first is soft.
   function transcriptOf(box) {
     var from = +box.dataset.from || 0;
     var lines = Array.prototype.slice.call(box.querySelectorAll("li")).map(function (li) {
@@ -279,7 +279,8 @@
       from: from, lines: lines,
       update: function (ms) {
         var latest = -1, now = -1;
-        lines.forEach(function (l, j) { if (ms >= l.at) latest = j; if (ms >= l.at && ms < l.end) now = j; });
+        lines.forEach(function (l, j) { if (ms >= l.at) latest = j; });
+        now = latest;
         var key = latest + ":" + now;
         if (key === lastKey) return;
         lastKey = key;
