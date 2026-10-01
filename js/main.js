@@ -265,25 +265,27 @@
   var controllers = {};
 
   // A transcript column, as in Figma: each line carries its start and end (ms, on its video's
-  // clock, offset by data-from). The current line is the latest one to have started; it is white,
-  // the lines either side of it are soft and the rest dim. Before the first line, it is next.
+  // clock, offset by data-from). A line is big and white only while it is being said, the same in
+  // every transcript. The lines next to the latest one said are soft, the rest dim; before the
+  // first line, the first is soft.
   function transcriptOf(box) {
     var from = +box.dataset.from || 0;
     var lines = Array.prototype.slice.call(box.querySelectorAll("li")).map(function (li) {
       var who = li.querySelector(".t-caps12").textContent.split("·");
       return { li: li, at: +li.dataset.at - from, end: +li.dataset.end - from, who: who.length > 1 ? who.pop().trim() : "" };
     });
-    var last = -2;
+    var lastKey = "";
     return {
       from: from, lines: lines,
       update: function (ms) {
-        var cur = -1;
-        lines.forEach(function (l, j) { if (ms >= l.at) cur = j; });
-        if (cur === last) return;
-        last = cur;
+        var latest = -1, now = -1;
+        lines.forEach(function (l, j) { if (ms >= l.at) latest = j; if (ms >= l.at && ms < l.end) now = j; });
+        var key = latest + ":" + now;
+        if (key === lastKey) return;
+        lastKey = key;
         lines.forEach(function (l, j) {
-          l.li.classList.toggle("is-active", j === cur);
-          l.li.classList.toggle("is-near", cur < 0 ? j === 0 : Math.abs(j - cur) === 1);
+          l.li.classList.toggle("is-active", j === now);
+          l.li.classList.toggle("is-near", j !== now && (latest < 0 ? j === 0 : Math.abs(j - latest) <= 1));
         });
       }
     };
