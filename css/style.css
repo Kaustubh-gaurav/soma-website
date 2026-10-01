@@ -37,7 +37,7 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
    Manrope: headlines, figures and titles. Satoshi: everything else; Bold for UI, caps and
    labels, Medium for body, Regular only for the confirmation line. */
 .t-display { font-family: "Manrope", sans-serif; font-size: 84px; line-height: 1.2; font-weight: 500; letter-spacing: -1.5px; } /* Display/84 */
-.t-fig     { font-family: "Manrope", sans-serif; font-size: 64px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }   /* Figure/64 */
+.t-fig     { font-family: "Manrope", sans-serif; font-size: 64px; line-height: 1.2; font-weight: 500; letter-spacing: -1.5px; }   /* Figure/64 */
 .t-title   { font-family: "Manrope", sans-serif; font-size: 40px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }   /* Heading/40 Medium */
 .t-title-s { font-family: "Manrope", sans-serif; font-size: 40px; line-height: 1; font-weight: 600; letter-spacing: -1.5px; }   /* Heading/40 SemiBold */
 .t-d56     { font-size: 56px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }   /* Display/56 */
