@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SOMA · For Hospitals</title>
+  <meta name="description" content="SOMA connects clinical environments, medical devices and hospital systems to capture, synchronize and structure real-world healthcare data.">
+  <meta name="theme-color" content="#000000">
+  <link rel="preload" href="assets/fonts/Satoshi-Bold.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="assets/fonts/Manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/video/01-home.jpg?v=4" as="image">
+  <link rel="stylesheet" href="css/style.css?v=11">
+</head>
+<body>
+  <main class="stage" id="stage">
+
+    <!-- ===== Media: the hero footage only ===== -->
+    <div class="media-layer">
+      <div class="media" data-scene="0"><video src="assets/video/01-home.mp4?v=4" poster="assets/video/01-home.jpg?v=4" muted playsinline loop preload="auto"></video></div>
+    </div>
+
+    <div class="scrim" aria-hidden="true"></div>
+    <!-- Paper wash behind the infrastructure rows -->
+    <div class="panel" aria-hidden="true"></div>
+
+    <!-- ===== The board: Figma page "For Hospitals · from doc", 1280 x 832 screens ===== -->
+    <div class="board" id="board">
+
+      <!-- 01 Hero -->
+      <section class="scene is-active" data-geo="hero" data-label="For Hospitals" aria-label="For Hospitals">
+        <div class="head ay" style="left:105px;top:214px">
+          <h1 class="t-display" style="width:976px">The hospital is the world’s richest source of healthcare data.</h1>
+          <p class="t-lead c-sec" style="width:976px;margin-top:24px">SOMA connects clinical environments, medical devices and hospital systems to capture, synchronize and structure real-world healthcare data — creating a continuous foundation for AI, research and innovation.</p>
+          <button class="btn btn--16" type="button" data-goto="request" style="margin-top:24px">Request Infrastructure Assessment</button>
+        </div>
+      </section>
+
+      <!-- 02 Infrastructure -->
+      <section class="scene scene--h" data-geo="h-rows4" data-label="Infrastructure" aria-label="Infrastructure">
+        <div class="head ay" style="left:105px;top:419px">
+          <h2 class="t-fig" style="width:593px">The infrastructure to continuously capture healthcare reality.</h2>
+        </div>
+        <div class="hcol ax">
+          <div class="hrow" style="--i:0"><span class="t-title-s">01 Capture</span><span class="t-b16m c-sec">Operating rooms · Procedure rooms · Clinics · First-person + scope feeds</span></div>
+          <div class="hrow" style="--i:1"><span class="t-title-s">02 Clinical systems</span><span class="t-b16m c-sec">EHR · Labs · Reports · PACS + procedure metadata</span></div>
+          <div class="hrow" style="--i:2"><span class="t-title-s">03 Secure data layer</span><span class="t-b16m c-sec">Ingestion · Storage · De-identification · Access control</span></div>
+          <div class="hrow is-paper" style="--i:3"><span class="t-title-s">04 AI data pipeline</span><span class="t-b16m c-sec">Synchronization · Transcription · Annotation · QC + dataset generation</span></div>
+        </div>
+      </section>
+
+      <!-- 03 Opportunity: hospital today merges into SOMA, which splits into what it enables -->
+      <section class="scene scene--h" data-geo="h-col" data-label="Opportunity" aria-label="Opportunity">
+        <div class="head ay" style="left:105px;top:400px">
+          <h2 class="t-fig" style="width:593px">Your hospital already generates extraordinary data.</h2>
+        </div>
+        <div class="head head--sub ay" style="left:105px;top:655px">
+          <p class="t-b16m c-sec" style="width:593px">Every procedure, conversation, image, device signal, report and clinical decision creates valuable information. But much of that information remains fragmented across systems, unstructured, or difficult to access for research and AI.</p>
+        </div>
+        <div class="hcol ax">
+          <div class="hblock" style="--i:0">
+            <span class="t-caps14 c-muted">Hospital today</span>
+            <div class="hgrid t-b16b c-sec"><span>Video</span><span>Audio</span><span>Scopes</span><span>Medical devices</span><span>EHR</span><span>PACS</span><span>Labs</span><span>Clinical documentation</span></div>
+          </div>
+          <div class="conn" aria-hidden="true">
+            <i style="left:26.2%;top:0;width:1px;height:50%"></i><i style="left:73.8%;top:0;width:1px;height:50%"></i>
+            <i style="left:26.2%;top:50%;width:47.6%;height:1px"></i><i style="left:50%;top:50%;width:1px;height:calc(50% - 6px)"></i>
+            <i class="a" style="left:50%"></i>
+          </div>
+          <div class="hnode" style="--i:1">
+            <span class="t-logo">SOMA</span>
+            <p class="t-b16m">SOMA helps turn that fragmented clinical reality into a continuous, structured data resource for your hospital.</p>
+          </div>
+          <div class="conn" aria-hidden="true">
+            <i style="left:50%;top:0;width:1px;height:50%"></i><i style="left:26.2%;top:50%;width:47.6%;height:1px"></i>
+            <i style="left:26.2%;top:50%;width:1px;height:calc(50% - 6px)"></i><i style="left:73.8%;top:50%;width:1px;height:calc(50% - 6px)"></i>
+            <i class="a" style="left:26.2%"></i><i class="a" style="left:73.8%"></i>
+          </div>
+          <div class="hblock" style="--i:2">
+            <span class="t-caps14 c-muted">What it enables</span>
+            <div class="hgrid t-b16b"><span>AI development</span><span>Clinical research</span><span>Medical education</span><span>Institutional knowledge</span><span>Approved data programs</span><span>Research collaborations</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 Start small: one department lit, the footprint grows to hospital wide -->
+      <section class="scene scene--h" data-geo="h-col" data-label="Start small" aria-label="Start small">
+        <div class="head ay" style="left:105px;top:501px">
+          <h2 class="t-fig" style="width:593px">AI-ready hospitals in 90 days.</h2>
+        </div>
+        <div class="head head--sub ay" style="left:105px;top:679px">
+          <p class="t-b16m c-sec" style="width:593px">You don't need to transform the entire hospital at once. Start with one department, establish the infrastructure, and expand from there.</p>
+        </div>
+        <div class="hcol ax">
+          <div class="footprint" style="--i:0" role="img" aria-label="Start in the operating room, then expand to radiology, pathology, ICU, emergency, outpatient and hospital-wide">
+            <div class="box is-all" style="--i:6"><span class="t-caps12">Hospital-wide</span></div>
+            <div class="box" style="--i:5"><span class="t-caps12">Outpatient</span></div>
+            <div class="box" style="--i:4"><span class="t-caps12">Emergency</span></div>
+            <div class="box" style="--i:3"><span class="t-caps12">ICU</span></div>
+            <div class="box" style="--i:2"><span class="t-caps12">Pathology</span></div>
+            <div class="box" style="--i:1"><span class="t-caps12">Radiology</span></div>
+            <div class="box is-start" style="--i:0"><span class="t-caps12">Operating room</span></div>
+          </div>
+          <div class="hstages" style="--i:1">
+            <div class="hstage"><span class="t-caps14 c-muted">01</span><span class="t-b16b">Assess</span><span class="t-b16m c-sec">Systems, departments, workflows and data sources.</span></div>
+            <div class="hstage"><span class="t-caps14 c-muted">02</span><span class="t-b16b">Design</span><span class="t-b16m c-sec">Capture architecture, infrastructure and governance.</span></div>
+            <div class="hstage"><span class="t-caps14 c-muted">03</span><span class="t-b16b">Deploy</span><span class="t-b16m c-sec">Capture systems, integrations and workflows.</span></div>
+            <div class="hstage"><span class="t-caps14 c-muted">04</span><span class="t-b16b">Activate</span><span class="t-b16m c-sec">Validation, processing and dataset creation.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 05 Request an infrastructure assessment -->
+      <section class="scene scene--form" data-geo="form-assess" data-norail data-label="Assessment" aria-label="Request an infrastructure assessment">
+        <form class="form form--assess ac" id="assessment-form" data-required="name email role phone" data-missing="Please add your name, a valid work email, your role and a phone number." novalidate>
+          <div class="form__head">
+            <h2 class="t-title-s">Request an infrastructure assessment</h2>
+            <p class="t-b16m c-sec">Start with an infrastructure assessment and identify where your hospital can begin capturing and structuring AI-ready clinical data.</p>
+          </div>
+          <div class="form__fields">
+            <label class="field"><span class="t-caps14">Name</span><span class="field__input"><input name="name" type="text" placeholder="Full name" autocomplete="name" required></span></label>
+            <label class="field"><span class="t-caps14">Work email</span><span class="field__input"><input name="email" type="email" placeholder="name@hospital.com" autocomplete="email" required></span></label>
+            <label class="field field--select"><span class="t-caps14">Role</span><span class="field__input">
+              <select name="role" required>
+                <option value="" selected disabled>CEO, CIO / CTO, Medical Director…</option>
+                <option>CEO</option><option>CIO / CTO</option><option>Medical Director</option><option>Research &amp; Innovation</option><option>Other</option>
+              </select></span></label>
+            <label class="field"><span class="t-caps14">Phone number</span><span class="field__input"><input name="phone" type="tel" placeholder="+91 00000 00000" autocomplete="tel" required></span></label>
+          </div>
+          <button class="btn btn--16 btn--block" type="submit">Request Infrastructure Assessment</button>
+          <p class="form__status t-b14" role="status" aria-live="polite"></p>
+        </form>
+        <div class="form-done form-done--assess ac" hidden>
+          <h2 class="t-d56">Request received.</h2>
+          <p class="t-b16 c-sec">We’ll be in touch over email to set up your infrastructure assessment.</p>
+        </div>
+      </section>
+
+      <!-- 06 Footer -->
+      <section class="scene scene--footer" data-geo="footer" data-norail data-label="Footer" aria-label="Footer">
+        <div class="footer-brand ay">
+          <div class="t-fig">SOMA</div>
+          <div class="t-lead c-sec">Real-world surgical data for AI.</div>
+        </div>
+        <nav class="footer-links ay t-nav16" aria-label="Footer">
+          <a href="index.html?s=1">Data</a>
+          <a class="is-current" href="hospitals.html" aria-current="page">For Hospitals</a>
+          <span aria-disabled="true">Privacy</span>
+          <span aria-disabled="true">Terms</span>
+        </nav>
+      </section>
+
+      <!-- ===== Fixed chrome on the board ===== -->
+      <a class="logo t-logo" href="index.html">SOMA</a>
+      <nav class="nav" aria-label="Main">
+        <a class="nav__link t-nav14" href="index.html">Home</a>
+        <a class="nav__link t-nav14 is-current" href="hospitals.html" aria-current="page">For Hospitals</a>
+        <a class="btn btn--14" href="index.html#request">Request Sample</a>
+      </nav>
+      <nav class="rail" aria-label="Sections"><ol class="rail__list"></ol></nav>
+
+      <div class="backed ay">
+        <span class="backed__group">
+          <span class="t-caps16 c-sec">Backed by</span>
+          <span class="backed__logos">
+            <img src="assets/img/ycombinator.png" alt="Y Combinator" width="116" height="24">
+            <img src="assets/img/drmorepen.png" alt="Dr. Morepen" width="126" height="40">
+          </span>
+        </span>
+        <span class="t-nav16 c-sec">10,000+ clinician network</span>
+      </div>
+    </div>
+
+    <!-- ===== Frame: rules, extra dividers and crosses, drawn over the whole viewport ===== -->
+    <div class="frame" aria-hidden="true">
+      <span class="rule rule--v" data-f="v1"></span><span class="rule rule--v" data-f="v2"></span>
+      <span class="rule rule--h" data-f="h1"></span><span class="rule rule--h" data-f="fold"></span>
+      <span class="rule rule--s" data-f="col"></span><span class="rule rule--s rule--faint" data-f="col2"></span>
+      <span class="rule rule--s" data-f="r1"></span><span class="rule rule--s" data-f="r2"></span>
+      <span class="rule rule--s" data-f="r3"></span><span class="rule rule--s" data-f="r4"></span>
+      <span class="cross" data-f="tl"></span><span class="cross" data-f="tr"></span>
+      <span class="cross" data-f="bl"></span><span class="cross" data-f="br"></span>
+      <span class="cross" data-f="ct"></span><span class="cross" data-f="cb"></span>
+      <span class="cross" data-f="x1"></span><span class="cross" data-f="x2"></span><span class="cross" data-f="x3"></span>
+    </div>
+
+    <!-- ===== Loader ===== -->
+    <div class="loader" id="loader" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <span class="cross cross--tl"></span><span class="cross cross--tr"></span>
+      <span class="cross cross--bl"></span><span class="cross cross--br"></span>
+      <span class="loader__count t-display"><span id="loader-count">0</span>%</span>
+    </div>
+  </main>
+
+  <script src="js/main.js?v=9"></script>
+</body>
+</html>

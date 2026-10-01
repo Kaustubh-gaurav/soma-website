@@ -6,6 +6,8 @@
 @font-face { font-family: "Satoshi"; src: url("../assets/fonts/Satoshi-Regular.woff") format("woff"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Satoshi"; src: url("../assets/fonts/Satoshi-Medium.woff") format("woff"); font-weight: 500; font-display: swap; }
 @font-face { font-family: "Satoshi"; src: url("../assets/fonts/Satoshi-Bold.woff") format("woff"); font-weight: 700; font-display: swap; }
+/* Manrope (variable, latin) for headlines, figures and titles */
+@font-face { font-family: "Manrope"; src: url("../assets/fonts/Manrope-latin.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
 
 :root {
   /* SOMA / Color: six colours, nothing else.
@@ -31,17 +33,32 @@ h1, h2, p, ol { margin: 0; padding: 0; }
 button, input, select { font: inherit; color: inherit; }
 button { background: none; border: 0; padding: 0; cursor: pointer; }
 
-/* ---------- Type ramp (SOMA text styles) ---------- */
-.t-display { font-size: 56px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }
-.t-title   { font-size: 32px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }
-.t-logo    { font-size: 24px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }
-.t-b16     { font-size: 16px; line-height: 24px; font-weight: 400; }
-.t-b16m    { font-size: 16px; line-height: 24px; font-weight: 500; }
+/* ---------- Type ramp (SOMA text styles, as set on Page 8) ----------
+   Manrope: headlines, figures and titles. Satoshi: everything else; Bold for UI, caps and
+   labels, Medium for body, Regular only for the confirmation line. */
+.t-display { font-family: "Manrope", sans-serif; font-size: 84px; line-height: 1.2; font-weight: 500; letter-spacing: -1.5px; } /* Display/84 */
+.t-fig     { font-family: "Manrope", sans-serif; font-size: 64px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }   /* Figure/64 */
+.t-title   { font-family: "Manrope", sans-serif; font-size: 40px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }   /* Heading/40 Medium */
+.t-title-s { font-family: "Manrope", sans-serif; font-size: 40px; line-height: 1; font-weight: 600; letter-spacing: -1.5px; }   /* Heading/40 SemiBold */
+.t-d56     { font-size: 56px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }   /* Display/56 */
+.t-logo    { font-size: 24px; line-height: 1; font-weight: 500; letter-spacing: -1.5px; }   /* Logo/24 */
+.t-lead    { font-size: 24px; line-height: 36px; font-weight: 500; }                        /* Lead/24 */
+.t-b24m    { font-size: 24px; line-height: 32px; font-weight: 500; }                        /* Body/24 Medium */
+.t-l24     { font-size: 24px; line-height: 24px; font-weight: 500; }                        /* Label/24 */
+.t-caps18  { font-size: 18px; line-height: 24px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+.t-b16b    { font-size: 16px; line-height: 22px; font-weight: 700; }                        /* Body/16 Bold */
+.t-caps16  { font-size: 16px; line-height: 22px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+.t-nav16   { font-size: 16px; line-height: 22px; font-weight: 700; text-transform: uppercase; }
+.t-b16m    { font-size: 16px; line-height: 24px; font-weight: 500; }                        /* Body/16 Medium */
+.t-b16     { font-size: 16px; line-height: 24px; font-weight: 400; }                        /* Body/16 Regular */
+.t-nav14   { font-size: 14px; line-height: 20px; font-weight: 700; text-transform: uppercase; }
+.t-btn14   { font-size: 14px; line-height: 20px; font-weight: 700; }                        /* Button/14 */
+.t-caps14  { font-size: 14px; line-height: 20px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+.t-l14     { font-size: 14px; line-height: 20px; font-weight: 500; }                        /* Label/14 */
 .t-b14     { font-size: 14px; line-height: 20px; font-weight: 400; }
-.t-l14     { font-size: 14px; line-height: 20px; font-weight: 500; }
-.t-caps14  { font-size: 14px; line-height: 20px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; }
-.t-caps12  { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; }
-.t-cap12   { font-size: 12px; line-height: 16px; font-weight: 500; }
+.t-caps12  { font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+.t-caps12m { font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; }
+.t-cap12   { font-size: 12px; line-height: 16px; font-weight: 700; }                        /* Caption/12 */
 .c-sec { color: var(--white-sub); }
 .c-muted { color: var(--white-muted); }
 .c-dis { color: var(--white-muted); }
@@ -112,9 +129,9 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 /* Chrome */
 .logo { position: absolute; top: 28px; left: 0; color: var(--white); text-decoration: none; transform: translateX(calc(var(--logo-x, 105) * 1px)); transition: transform var(--slide) var(--ease); }
 .nav { position: absolute; top: 21px; right: 0; display: flex; align-items: center; gap: 32px; transform: translateX(calc(var(--nav-x, -107) * 1px)); transition: transform var(--slide) var(--ease); }
-.nav__link { color: var(--white-sub); transition: color 200ms ease; }
-button.nav__link:hover { color: var(--white); }
-.nav__link.is-disabled { cursor: default; }
+.nav__link { color: var(--white-sub); text-decoration: none; transition: color 200ms ease; }
+.nav__link:hover, .nav__link.is-current { color: var(--white); }
+.btn { text-decoration: none; }
 
 .rail { position: absolute; left: 81px; top: 105px; transition: opacity 400ms ease 200ms; }
 .stage.no-rail .rail { opacity: 0; pointer-events: none; transition-delay: 0ms; }
@@ -126,8 +143,11 @@ button.nav__link:hover { color: var(--white); }
 .rail__item.is-current::before { width: 8px; background: var(--white); }
 .rail__item.is-current .rail__label { max-width: 240px; opacity: 1; }
 
-.backed { position: absolute; left: 113px; top: 772px; width: calc(1055px + var(--dx)); height: 40px; display: flex; align-items: center; justify-content: space-between; opacity: 0; pointer-events: none; transition: opacity var(--fade) ease; }
+/* Spans the frame by default; the form screens move it to their box (--backed-x, --backed-w),
+   and the sample form stacks the network line above the logos. */
+.backed { position: absolute; left: var(--backed-x, 113px); top: 772px; width: var(--backed-w, calc(1055px + var(--dx))); height: 40px; display: flex; align-items: center; justify-content: space-between; opacity: 0; pointer-events: none; transition: opacity var(--fade) ease; }
 .stage.show-backed .backed { opacity: 1; }
+.stage.backed-stack .backed { top: 742px; height: 70px; flex-direction: column-reverse; align-items: flex-start; justify-content: flex-end; gap: 8px; }
 .backed__group { display: flex; align-items: center; gap: 32px; }
 .backed__logos { display: flex; align-items: center; gap: 24px; }
 .backed__logos img { display: block; object-fit: contain; }
@@ -155,15 +175,15 @@ button.nav__link:hover { color: var(--white); }
 /* ---------- 02 Specimen ---------- */
 .spec-time { position: absolute; right: 104px; top: 105px; text-align: right; display: flex; flex-direction: column; gap: 4px; }
 .toggles { position: absolute; left: 105px; top: 703px; display: flex; gap: 32px; align-items: flex-start; }
-.toggle { position: relative; display: flex; flex-direction: column; gap: 4px; color: var(--white-sub); font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; transition: color 200ms ease; text-align: left; }
-.toggle:hover { color: var(--white); }
-.toggle.is-active { color: var(--white); font-size: 14px; line-height: 20px; }
+.toggle { position: relative; display: flex; flex-direction: column; gap: 4px; color: var(--white-muted); font-size: 18px; line-height: 24px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; transition: color 200ms ease; text-align: left; }
+.toggle:hover { color: var(--white-sub); }
+.toggle.is-active { color: var(--white); }
 .toggle__bar { display: block; height: 1px; width: 100%; background: transparent; overflow: hidden; }
 .toggle__bar i { display: block; height: 100%; width: 100%; background: var(--white); transform: scaleX(0); transform-origin: 0 50%; }
 .toggle.is-active .toggle__bar i { transform: scaleX(var(--progress, 0)); }
 .band .metrics { display: flex; gap: 32px; margin-left: auto; }
 .metrics > span { display: inline-flex; align-items: baseline; gap: 8px; }
-.metrics b { font-weight: 500; }
+.metrics b { font-weight: 700; }
 .metrics i { font-style: normal; }
 .scene--specimen .band { justify-content: space-between; }
 
@@ -186,7 +206,7 @@ button.nav__link:hover { color: var(--white); }
 .transcript__list.is-jump { transition: none; }
 .transcript li { position: relative; height: 42px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding-right: 20px;
   color: var(--white-muted); opacity: 0; transition: color 300ms ease, opacity 300ms ease; }
-.transcript .line { font-size: 16px; line-height: 22px; font-weight: 400; letter-spacing: -0.5px; }
+.transcript .line { font-size: 16px; line-height: 22px; font-weight: 700; letter-spacing: -0.5px; }
 .transcript .tick { position: absolute; right: 0; top: 7px; width: 8px; height: 1px; background: var(--white-muted); transition: background-color 500ms ease; }
 .transcript li.is-far { opacity: 0.6; color: var(--white-muted); }
 .transcript li.is-past, .transcript li.is-next { opacity: 1; color: var(--white-muted); }
@@ -220,14 +240,14 @@ button.nav__link:hover { color: var(--white); }
 /* Column rule at 365 on both, as in Figma; the rows share the height between the rules */
 .rows { position: absolute; top: 81px; left: 366px; width: calc(834px + var(--dx)); height: calc(670px + var(--dy)); display: flex; flex-direction: column; }
 .row { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex: 1 1 0; min-height: 0; }
-.row > .t-b16 { width: 429px; }
-.detail { width: 429px; display: flex; flex-direction: column; gap: 16px; }
+.row > .t-l24 { width: 333px; }
+.detail { width: 333px; display: flex; flex-direction: column; gap: 16px; }
 
 /* ---------- 08 Delivery ---------- */
 .tree { position: absolute; left: 721px; top: 105px; width: 239px; }
 .tree__head { padding-left: 24px; }
 .tree__rows { margin-top: 16px; display: flex; flex-direction: column; }
-.file { display: flex; align-items: center; height: 28px; padding-left: 44px; font-size: 14px; line-height: 20px; color: var(--white-sub); text-align: left; position: relative; transition: background-color 150ms ease, color 150ms ease; }
+.file { display: flex; align-items: center; height: 28px; padding-left: 44px; font-size: 16px; line-height: 22px; font-weight: 700; color: var(--white-sub); text-align: left; position: relative; transition: background-color 150ms ease, color 150ms ease; }
 .file.is-folder, .file.is-root { padding-left: 24px; }
 .file.is-folder { color: var(--white); }
 .file.gap { margin-top: 4px; }
@@ -250,7 +270,7 @@ button.nav__link:hover { color: var(--white); }
 /* ---------- 09 Custom ---------- */
 .stages { position: absolute; left: 723px; top: 81px; width: 477px; height: calc(670px + var(--dy)); display: flex; flex-direction: column; }
 .stage-row { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; gap: 8px; }
-.stage-row > .t-b16 { width: 168px; text-align: right; }
+.stage-row > .t-b24m { width: 167px; }
 
 /* The 09 rows rise in one after another once the old screen has cleared (see go()). */
 .scene.is-active .stage-row { animation: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--late, 0ms) + 120ms + var(--i) * 70ms); }
@@ -258,57 +278,89 @@ button.nav__link:hover { color: var(--white); }
 .scene.is-active { transition-delay: var(--late, 0ms); }
 .scene.is-leaving { opacity: 0; transition: opacity var(--out) ease, visibility 0s linear var(--out); }
 
-/* ---------- 11 Hospitals ----------
-   Three chips cut to the same solid body width (300, images 306 with a 3 px soft edge),
-   body bottoms 175 apart. They start stacked on the middle
-   one, so only the top chip shows, then open out: Hospital data rises, AI ready data drops and
-   the secure data layer is revealed. The chips carry their own labels. */
-.chips { position: absolute; left: 809px; top: 124px; width: 306px; height: 580px; --lift: 175px; }
-.chip { position: absolute; left: 0; width: 306px; height: auto; display: block; }
-.chip--hospitals { top: 14px; }
-.chip--capture { top: 190.5px; }
-.chip--data { top: 364.5px; }
-.scene.is-active .chips { animation: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--late, 0ms); }
-.scene.is-active .chip--hospitals { animation: chipUp 1000ms cubic-bezier(0.65, 0, 0.35, 1) both; animation-delay: calc(var(--late, 0ms) + 650ms); }
-.scene.is-active .chip--data { animation: chipDown 1000ms cubic-bezier(0.65, 0, 0.35, 1) both; animation-delay: calc(var(--late, 0ms) + 650ms); }
-.scene.is-active .chip--capture { animation: chipShow 1000ms linear both; animation-delay: calc(var(--late, 0ms) + 650ms); }
-@keyframes chipUp { from { transform: translateY(var(--lift)); } }
-@keyframes chipDown { 0% { transform: translateY(calc(var(--lift) * -1)); opacity: 0; } 20% { opacity: 1; } }
-@keyframes chipShow { 0% { opacity: 0; } 25% { opacity: 1; } }
-
-/* ---------- 12 Request ---------- */
-.form { position: absolute; left: 265px; top: 122px; width: 750px; display: flex; flex-direction: column; gap: 24px; }
-.form__row { display: flex; gap: 24px; }
-.form__row > .field { flex: 1 1 0; }
-.field { display: flex; flex-direction: column; gap: 8px; border: 0; margin: 0; padding: 0; min-width: 0; }
-.field--half { width: 363px; }
-.field__label-row { display: flex; justify-content: space-between; }
-.field__input { position: relative; display: block; border-bottom: 1px solid var(--white); padding-bottom: 4px; }
-.field input, .field select { width: 100%; background: transparent; border: 0; padding: 0; outline: none; font-size: 16px; line-height: 24px; color: var(--white); appearance: none; -webkit-appearance: none; border-radius: 0; }
+/* ---------- Forms ----------
+   12 Request a sample: one column in a 548 wide box (v1 366, v2 914, h1 172, fold 660).
+   Hospitals assessment: two columns in a 786 wide box (v1 247, v2 1033, h1 192, fold 615).
+   Both boxes centre on the window, so the form anchors with .ac. */
+.form { position: absolute; display: flex; flex-direction: column; }
+.form--sample { left: 391px; top: 197px; width: 499px; }
+.form--assess { left: 271px; top: 216px; width: 738px; }
+.form__head p { margin-top: 16px; }
+.form__fields { display: flex; flex-direction: column; margin-top: 32px; }
+.form--sample .form__fields { gap: 24px; }
+.form--assess .form__fields { display: grid; grid-template-columns: 1fr 1fr; gap: 32px 24px; }
+.form .btn--block { margin-top: 24px; }
+.form--assess .btn--block { margin-top: 40px; }
+.field { display: flex; flex-direction: column; border: 0; margin: 0; padding: 0; min-width: 0; }
+.form--sample .field { gap: 12px; }
+.form--assess .field { gap: 8px; }
+.field__input { position: relative; display: block; border-bottom: 1px solid var(--white); padding-bottom: 8px; }
+.form--assess .field__input { padding-bottom: 4px; }
+.field input, .field select { width: 100%; background: transparent; border: 0; padding: 0; outline: none; font-size: 16px; line-height: 22px; color: var(--white); appearance: none; -webkit-appearance: none; border-radius: 0; }
+.form--sample .field input { font-weight: 400; }
+.form--assess .field input, .form--assess .field select { font-weight: 500; line-height: 24px; }
 .field input::placeholder { color: var(--white-muted); opacity: 1; }
 .field select { cursor: pointer; padding-right: 24px; }
 .field select:invalid { color: var(--white-muted); }
 .field select option { color: var(--black); }
-.field--select .field__input::after { content: ""; position: absolute; right: 2px; top: 8px; width: 8px; height: 8px; border-right: 1.3px solid var(--white); border-bottom: 1.3px solid var(--white); transform: rotate(45deg); pointer-events: none; }
-.field.is-invalid .field__input { border-bottom: 2px solid var(--white); padding-bottom: 3px; }
-.field legend { padding: 0; margin-bottom: 8px; }
-.options { display: flex; gap: 8px; flex-wrap: wrap; }
-.option { position: relative; cursor: pointer; }
-.option input { position: absolute; opacity: 0; pointer-events: none; }
-.option span { display: inline-flex; align-items: center; height: 36px; padding: 0 12px; border: 1px solid var(--white-muted); border-radius: 4px; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--white-sub); transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease; }
-.option:hover span { border-color: var(--white); color: var(--white); }
-.option input:checked + span { background: var(--white); color: var(--black-muted); border-color: var(--white); }
-.option input:focus-visible + span { outline: 1px solid var(--white); outline-offset: 3px; }
-.form__status { min-height: 0; color: var(--white-sub); }
+.field--select .field__input::after { content: ""; position: absolute; right: 4px; top: 6px; width: 8px; height: 8px; border-right: 1.3px solid var(--white); border-bottom: 1.3px solid var(--white); transform: rotate(45deg); pointer-events: none; }
+.field.is-invalid .field__input { border-bottom: 2px solid var(--white); padding-bottom: 7px; }
+.form--assess .field.is-invalid .field__input { padding-bottom: 3px; }
+.btn--block { width: 100%; }
+.form__status { margin-top: 16px; color: var(--white-sub); }
 .form__status:empty { display: none; }
-.form-done { position: absolute; left: 265px; top: 113px; }
+.form-done { position: absolute; display: flex; flex-direction: column; gap: 16px; }
+.form-done[hidden], .form[hidden] { display: none; }
+.form-done--sample { left: 391px; top: 197px; width: 499px; }
+.form-done--assess { left: 271px; top: 216px; width: 738px; }
 
 /* ---------- 13 Footer ---------- */
-.footer-brand { position: absolute; left: 105px; top: 537px; }
+.footer-brand { position: absolute; left: 105px; top: 537px; display: flex; flex-direction: column; gap: 25px; }
 .footer-links { position: absolute; right: 105px; top: 537px; display: flex; gap: 32px; }
-.footer-links button { color: var(--white-sub); }
-.footer-links button:hover { color: var(--white); }
+.footer-links > * { color: var(--white-sub); text-decoration: none; text-transform: inherit; transition: color 200ms ease; }
+.footer-links > a:hover, .footer-links > button:hover, .footer-links .is-current { color: var(--white); }
 .footer-links [aria-disabled] { cursor: default; }
+.footer-links [aria-disabled]:hover { color: var(--white-sub); }
+
+/* ======================================================================
+   For Hospitals (hospitals.html). The right hand column sits between the
+   722 rule and v2 (723 to 1200) and follows the right edge (.ax).
+   ====================================================================== */
+.hcol { position: absolute; left: 723px; top: 81px; width: 477px; height: calc(670px + var(--dy)); display: flex; flex-direction: column; }
+
+/* Infrastructure: four equal rows on the paper wash; the last one, the AI data pipeline, is paper */
+.hrow { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 0 24px; }
+.hrow.is-paper { background: var(--white); color: var(--black-muted); }
+.hrow.is-paper .c-sec { color: var(--black-muted); }
+
+/* Opportunity: hospital today merges into SOMA, which splits into what it enables */
+.hblock { background: var(--white-card); padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.hgrid { display: grid; grid-template-columns: 1fr 1fr; }
+.hgrid > span { padding: 8px 0; border-top: 1px solid rgb(154 153 150 / 0.66); }
+.hgrid > span:nth-child(odd) { padding-right: 24px; }
+.hnode { background: var(--white); color: var(--black-muted); padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.conn { position: relative; flex: 1 1 0; min-height: 24px; }
+.conn i { position: absolute; background: var(--white); }
+.conn .a { width: 0; height: 0; background: none; border-left: 4.5px solid transparent; border-right: 4.5px solid transparent; border-top: 6px solid var(--white); transform: translateX(-4px); bottom: 0; }
+
+/* Start small: one department lit, the footprint grows out of its corner to hospital wide */
+.footprint { position: relative; flex: 1 1 0; min-height: 0; background: var(--white-card); }
+.footprint .box { position: absolute; left: 24px; bottom: 24px; border: 1px solid rgb(154 153 150 / 0.66);
+  width: calc(136px + (100% - 48px - 136px) * var(--i) / 6); height: calc(52px + (100% - 48px - 52px) * var(--i) / 6); }
+.footprint .box span { position: absolute; left: 12px; top: 12px; white-space: nowrap; color: var(--white-sub); }
+.footprint .box.is-start { background: var(--white); border-color: var(--white); }
+.footprint .box.is-start span { top: 50%; transform: translateY(-50%); color: var(--black-muted); }
+.footprint .box.is-all { border-color: var(--white); }
+.footprint .box.is-all span { color: var(--white); }
+.hstages { display: flex; flex-direction: column; }
+.hstage { display: flex; gap: 16px; padding: 14px 24px; height: 77px; background: var(--white-card); border-top: 1px solid rgb(154 153 150 / 0.66); }
+.hstage > :nth-child(1) { width: 24px; flex: none; }
+.hstage > :nth-child(2) { width: 80px; flex: none; }
+.hstage > :nth-child(3) { flex: 1 1 0; }
+
+/* Columns draw in once the old screen has cleared */
+.scene.is-active .hcol > * { animation: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--late, 0ms) + 120ms + var(--i, 0) * 70ms); }
+.scene.is-active .hcol > .conn { animation-name: fadeIn; }
 
 /* ---------- Loader ---------- */
 .loader { position: absolute; inset: 0; z-index: 10; background: var(--black); --p: 0; transition: opacity 700ms ease, visibility 0s linear 700ms;
@@ -317,10 +369,10 @@ button.nav__link:hover { color: var(--white); }
 .seg { position: absolute; background: var(--white-muted); opacity: 0.66; will-change: transform; }
 .seg--h { height: 1px; transform: scaleX(var(--p)); }
 .seg--v { width: 1px; transform: scaleY(var(--p)); }
-.loader__count { position: absolute; left: 0; top: 0; font-size: calc(56px * var(--k, 1)); letter-spacing: calc(-1.5px * var(--k, 1)); font-variant-numeric: tabular-nums; }
+.loader__count { position: absolute; left: 0; top: 0; font-size: calc(84px * var(--k, 1)); line-height: 1.2; letter-spacing: calc(-1.5px * var(--k, 1)); font-variant-numeric: tabular-nums; }
 
 /* ?still: no transitions, for screenshots */
-.stage.no-anim, .stage.no-anim * { transition: none !important; }
+.stage.no-anim, .stage.no-anim * { transition: none !important; animation: none !important; }
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
@@ -336,8 +388,10 @@ button.nav__link:hover { color: var(--white); }
    ====================================================================== */
 @media (max-width: 760px) {
   .board { width: 100vw; height: 100svh; transform: none; }
-  .t-display { font-size: 32px; letter-spacing: -1px; }
-  .t-title { font-size: 22px; letter-spacing: -0.8px; }
+  .t-display, .t-fig { font-size: 32px; line-height: 1.1; letter-spacing: -1px; }
+  .t-title, .t-title-s { font-size: 22px; letter-spacing: -0.8px; }
+  .t-lead { font-size: 15px; line-height: 22px; }
+  .t-l24, .t-b24m { font-size: 14px; line-height: 20px; }
   .head { left: 36px !important; top: auto !important; bottom: 120px; width: calc(100vw - 72px); }
   .head > * { width: 100% !important; }
   .head .btn { width: auto !important; margin-top: 20px !important; }
@@ -352,7 +406,8 @@ button.nav__link:hover { color: var(--white); }
   .scene--delivery .band > .c-muted { display: none; }
   .scene--delivery .band { gap: 14px; }
   .backed { left: 36px; top: auto; bottom: 24px; width: calc(100vw - 72px); height: 32px; }
-  .backed > .t-b16m { display: none; }
+  .backed > :last-child { display: none; }
+  .backed .t-caps16 { font-size: 12px; line-height: 16px; white-space: nowrap; }
   .backed__group { gap: 16px; }
   .backed__logos img:first-child { width: 88px; height: 18px; }
   .backed__logos img:last-child { width: 96px; height: 30px; }
@@ -385,7 +440,7 @@ button.nav__link:hover { color: var(--white); }
   /* 06, 07 */
   .rows { left: 20px; top: 65px; width: calc(100vw - 40px); height: calc(100svh - 161px); }
   .row { flex: 1 1 0; height: auto !important; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; padding: 0 16px 0 44px; }
-  .row > .t-b16, .detail { width: auto; font-size: 14px; line-height: 20px; }
+  .row > .t-l24, .detail { width: auto; font-size: 14px; line-height: 20px; }
   .detail { gap: 6px; }
   .detail .t-b16 { font-size: 13px; line-height: 18px; }
 
@@ -396,26 +451,42 @@ button.nav__link:hover { color: var(--white); }
   /* 09 */
   .stages { left: 20px; top: 65px; width: calc(100vw - 40px); height: auto; }
   .stage-row { flex: none; height: 56px; padding: 0 16px 0 44px; }
-  .stage-row > .t-b16 { width: auto; font-size: 13px; line-height: 18px; max-width: 45%; }
+  .stage-row > .t-b24m { width: auto; font-size: 13px; line-height: 18px; max-width: 45%; }
 
-  /* 11 */
-  .chips { left: 50%; top: 76px; margin-left: -112px; width: 224px; height: 425px; --lift: 128px; }
-  .chip { width: 224px; }
-  .chip--hospitals { top: 10px; }
-  .chip--capture { top: 140px; }
-  .chip--data { top: 267px; }
-
-  /* 12 */
-  .form { left: 36px; top: 84px; width: calc(100vw - 72px); max-height: calc(100svh - 120px); overflow-y: auto; gap: 18px; padding-bottom: 24px; }
-  .form__row { flex-direction: column; gap: 18px; }
-  .field--half { width: 100%; }
-  .form__head p { width: auto !important; font-size: 15px; line-height: 22px; }
-  .form-done { left: 36px; top: 96px; width: calc(100vw - 72px); }
-  .form-done p { width: auto !important; }
+  /* 12 forms */
+  .form { left: 36px !important; top: 84px; width: calc(100vw - 72px) !important; max-height: calc(100svh - 120px); overflow-y: auto; padding-bottom: 24px; }
+  .form .t-title-s { font-size: 28px; }
+  .form__head p { font-size: 15px; line-height: 22px; }
+  .form--assess .form__fields { grid-template-columns: 1fr; gap: 20px; }
+  .form-done { left: 36px !important; top: 96px; width: calc(100vw - 72px) !important; }
+  .form-done .t-d56 { font-size: 36px; }
+  .stage.backed-stack .backed { top: auto; bottom: 24px; height: 32px; flex-direction: row; align-items: center; }
 
   /* 13 */
-  .footer-brand { left: 36px; top: auto; bottom: 200px; }
+  .footer-brand { left: 36px; top: auto; bottom: 200px; gap: 12px; }
+  .footer-brand .t-fig { font-size: 40px; }
+  .footer-brand .t-lead { font-size: 16px; line-height: 24px; }
   .footer-links { left: 36px; right: auto; top: auto; bottom: 120px; flex-wrap: wrap; gap: 12px 24px; width: calc(100vw - 72px); }
+
+  /* For Hospitals: the column fills the top, the headline sits under it */
+  .hcol { left: 20px; top: 65px; width: calc(100vw - 40px); height: calc(100svh - 65px - 230px); }
+  .scene--h .head { bottom: 120px; }
+  .scene--h .head--sub { display: none; }
+  .hrow { gap: 4px; padding: 0 16px; }
+  .hrow .t-title-s { font-size: 20px; letter-spacing: -0.6px; }
+  .hrow .t-b16m { font-size: 13px; line-height: 18px; }
+  .hblock { padding: 12px 16px; gap: 6px; }
+  .hblock .t-caps14 { font-size: 11px; line-height: 14px; }
+  .hgrid > span { padding: 3px 0; font-size: 12px; line-height: 16px; }
+  .hnode { padding: 10px 16px; gap: 4px; }
+  .hnode .t-logo { font-size: 18px; }
+  .hnode .t-b16m { font-size: 12px; line-height: 16px; }
+  .conn { min-height: 14px; }
+  .footprint .box { left: 12px; bottom: 12px; width: calc(110px + (100% - 24px - 110px) * var(--i) / 6); height: calc(30px + (100% - 24px - 30px) * var(--i) / 6); }
+  .footprint .box span { left: 8px; top: 6px; font-size: 10px; line-height: 12px; }
+  .hstage { height: auto; padding: 8px 16px; gap: 10px; font-size: 13px; }
+  .hstage > * { font-size: 13px !important; line-height: 18px !important; }
+  .hstage > :nth-child(3) { display: none; }
 
   .loader__count { left: 36px; top: auto; bottom: 120px; font-size: 32px; letter-spacing: -1px; }
 }

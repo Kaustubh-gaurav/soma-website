@@ -1,4 +1,4 @@
-/* SOMA V2.
+/* SOMA V2. Drives both pages: index.html (data buyers) and hospitals.html (For Hospitals).
    One fixed stage. Scroll, arrow keys, a swipe or the rail move one section at a time. The frame
    rules animate to each section's geometry, so lines slide, grow and retract between screens.
    Sections never advance on their own; inside them, the specimen layers, the Hear transcript and
@@ -20,6 +20,7 @@
   var railList = board.querySelector(".rail__list");
   var last = scenes.length - 1;
   var REQUEST = scenes.findIndex(function (s) { return s.classList.contains("scene--form"); });
+  var SPEC = scenes.findIndex(function (s) { return s.classList.contains("scene--specimen"); });   // its clips wait for the layer clock
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var params = new URLSearchParams(location.search);
   if (params.has("still")) stage.classList.add("no-anim");
@@ -37,29 +38,38 @@
   var BASE_H = 670;                                         // h1 + 1 to fold, in Figma
   // Rules between equal rows: 06 and 07 have four rows (248, 416, 583), 09 has five (215 to 617).
   function split(of) { var out = []; for (var j = 1; j < of; j++) out.push(Math.floor(81 + (BASE_H + DY) * j / of)); return out; }
+  // Each section names its geometry in data-geo, so the same engine draws the home page and
+  // the For Hospitals page.
+  function typeOf(i) { return (scenes[i] && scenes[i].dataset.geo) || "scrim"; }
   function geoFor(i) {
     var g = { v1: 80, v2: 1200 + DX, h1: 80, fold: 751 + DY };
-    switch (i) {
-      case 0: g.scrim = 1; g.backed = 1; break;                                    // 01 Hero
-      case 1: case 2: case 3: case 4: g.scrim = 1; break;                            // 02 to 05
-      case 5: case 6: g.col = 365; g.rows = split(4); g.rx = 1; g.panel = 1; break; // 06, 07
-      case 7: g.col = 720 + DX; g.col2 = 960 + DX; break;                           // 08 Delivery
-      case 8: g.scrim = 1; g.col = 722 + DX; g.rows = split(5); g.panel = 1; break; // 09 Custom
-      case 9: g.col = 722 + DX; g.panel = 1; break;                                 // 11 Hospitals
-      case 10: g.v1 = 240 + DX / 2; g.v2 = 1040 + DX / 2; g.h1 = 88 + DY / 2; g.fold = 760 + DY / 2; g.noRail = 1; break; // 12 Request
-      case 11: g.h1 = 512 + DY; g.noRail = 1; g.backed = 1; break;                  // 13 Footer
+    switch (typeOf(i)) {
+      case "hero": g.scrim = 1; g.backed = 1; break;                                   // 01 Hero
+      case "scrim": g.scrim = 1; break;                                                 // 02 to 05
+      case "rows4": g.col = 365; g.rows = split(4); g.rx = 1; g.panel = 1; break;       // 06, 07
+      case "delivery": g.col = 720 + DX; g.col2 = 960 + DX; break;                      // 08 Delivery
+      case "custom": g.scrim = 1; g.col = 722 + DX; g.rows = split(5); g.panel = 1; break; // 09 Custom
+      case "h-rows4": g.col = 722 + DX; g.rows = split(4); g.rx = 1; g.panel = 1; break; // Hospitals: infrastructure
+      case "h-col": g.col = 722 + DX; break;                                            // Hospitals: opportunity, start small
+      case "form-sample":                                                               // 12 Request a sample
+        g.v1 = 366 + DX / 2; g.v2 = 914 + DX / 2; g.h1 = 172 + DY / 2; g.fold = 660 + DY / 2;
+        g.noRail = 1; g.backed = 1; g.stack = 1; g.bx = g.v1 + 25; g.bw = 499; break;
+      case "form-assess":                                                               // Hospitals: assessment
+        g.v1 = 247 + DX / 2; g.v2 = 1033 + DX / 2; g.h1 = 192 + DY / 2; g.fold = 615 + DY / 2;
+        g.noRail = 1; g.backed = 1; g.bx = g.v1 + 25; g.bw = 737; break;
+      case "footer": g.h1 = 512 + DY; g.noRail = 1; g.backed = 1; break;                // 13 Footer
     }
     return g;
   }
   // Phones: the board is not scaled, so geometry is in real pixels.
   function phoneGeo(i) {
-    var g = geoFor(i);
+    var g = geoFor(i), t = typeOf(i);
     var o = { v1: 20, v2: VW - 20, h1: 64, fold: VH - 96, scrim: g.scrim, backed: g.backed, noRail: g.noRail };
     var span = o.fold - o.h1;
-    if (i === 5 || i === 6) { o.col = 20; o.colHidden = 1; o.rows = [1, 2, 3].map(function (n) { return Math.round(o.h1 + span * n / 4); }); o.rx = 1; o.panel = 1; }
-    if (i === 8) { o.col = 20; o.colHidden = 1; o.rows = [1, 2, 3, 4].map(function (n) { return o.h1 + 1 + 56 * n; }); }
-    if (i === 10) o.fold = VH - 24;
-    if (i === 11) o.h1 = VH - 300;
+    if (t === "rows4") { o.col = 20; o.colHidden = 1; o.rows = [1, 2, 3].map(function (n) { return Math.round(o.h1 + span * n / 4); }); o.rx = 1; o.panel = 1; }
+    if (t === "custom") { o.col = 20; o.colHidden = 1; o.rows = [1, 2, 3, 4].map(function (n) { return o.h1 + 1 + 56 * n; }); }
+    if (t === "form-sample" || t === "form-assess") o.fold = VH - 24;
+    if (t === "footer") o.h1 = VH - 300;
     return o;
   }
 
@@ -116,8 +126,12 @@
     scrimEl.style.opacity = g.scrim ? 1 : 0;
     board.style.setProperty("--logo-x", isPhone ? 36 : g.v1 + 25);
     board.style.setProperty("--nav-x", isPhone ? -36 : g.v2 - 27 - (1280 + DX));
+    // The backed strip spans the frame by default; the form screens pull it in to their box.
+    board.style.setProperty("--backed-x", (g.bx != null ? g.bx : 113) + "px");
+    board.style.setProperty("--backed-w", (g.bw != null ? g.bw : 1055 + DX) + "px");
     stage.classList.toggle("no-rail", !!g.noRail);
     stage.classList.toggle("show-backed", !!g.backed);
+    stage.classList.toggle("backed-stack", !!g.stack);
   }
 
   // ---------- Fit the board to the window ----------
@@ -145,7 +159,7 @@
     });
     var cnt = document.querySelector(".loader__count");
     cnt.style.left = (isPhone ? 36 : px(105)) + "px";
-    cnt.style.top = (isPhone ? vh - 152 : px(671 + DY)) + "px";
+    cnt.style.top = (isPhone ? vh - 152 : px(626 + DY)) + "px";
     var mx = (X1 + X2) / 2, my = (Y1 + Y2) / 2;
     loaderSegs.forEach(function (sg) {
       var st = sg.el.style;
@@ -169,11 +183,11 @@
 
   // ---------- Rail ----------
   var railItems = scenes.map(function (scene, i) {
-    if (i === 0 || i >= REQUEST) return null;
+    if (i === 0 || scene.hasAttribute("data-norail")) return null;
     var li = document.createElement("li");
     var b = document.createElement("button");
     b.type = "button";
-    b.className = "rail__item t-caps14";
+    b.className = "rail__item t-nav14";
     b.setAttribute("aria-label", scene.dataset.label);
     var label = document.createElement("span");
     label.className = "rail__label";
@@ -208,7 +222,7 @@
   ["touchend", "click", "keydown"].forEach(function (t) {
     document.addEventListener(t, function () {
       if (!blocked) return; blocked = false;
-      videosIn(mediaFor(current)).forEach(function (v) { if (current !== 1 || v.classList.contains("is-shown")) play(v); });
+      videosIn(mediaFor(current)).forEach(function (v) { if (current !== SPEC || v.classList.contains("is-shown")) play(v); });
     }, true);
   });
   // Buffer a clip ahead of time without restarting a download that is already running.
@@ -225,7 +239,7 @@
       var tried = false;
       v.addEventListener("error", function () {
         if (tried) return; tried = true;
-        setTimeout(function () { v.load(); if (+m.dataset.scene === current && current !== 1) play(v); }, 1500);
+        setTimeout(function () { v.load(); if (+m.dataset.scene === current && current !== SPEC) play(v); }, 1500);
       });
     });
   });
@@ -238,7 +252,7 @@
       setTimeout(function () { from.classList.remove("is-leaving"); if (mediaFor(current) !== from) videosIn(from).forEach(function (v) { v.pause(); }); }, LEAVE_MS);
     }
     // Looping clips carry on from where they were; no seek, so nothing stalls on the way in.
-    if (to) { to.classList.add("is-on"); if (next !== 1) videosIn(to).forEach(play); }
+    if (to) { to.classList.add("is-on"); if (next !== SPEC) videosIn(to).forEach(play); }
     warm(next + 1);
   }
 
@@ -248,8 +262,8 @@
   // 02 Specimen: five layers, each one play of the clip; the underline under the active layer
   // fills as the clip plays, and the next layer starts when the clip ends. The centre stays clear:
   // a layer changes the footage and the readout under the clock; the band stays as designed.
-  (function () {
-    var scene = scenes[1];
+  if (SPEC > -1) (function () {
+    var scene = scenes[SPEC];
     var raw = stage.querySelector(".spec-vid--raw"), ann = stage.querySelector(".spec-vid--annotated");
     var toggles = Array.prototype.slice.call(scene.querySelectorAll(".toggle"));
     var layers = Array.prototype.slice.call(scene.querySelectorAll(".readout__item"));
@@ -277,17 +291,18 @@
     }
     [raw, ann].forEach(function (x) { x.addEventListener("ended", function () { if (active && x === v) set((layer + 1) % toggles.length); }); });
     toggles.forEach(function (t, i) { t.addEventListener("click", function () { set(i); }); });
-    controllers[1] = {
+    controllers[SPEC] = {
       enter: function () { active = true; set(0); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); },
-      leave: function () { active = false; cancelAnimationFrame(raf); setTimeout(function () { if (current !== 1) { raw.pause(); ann.pause(); } }, LEAVE_MS); }
+      leave: function () { active = false; cancelAnimationFrame(raf); setTimeout(function () { if (current !== SPEC) { raw.pause(); ann.pause(); } }, LEAVE_MS); }
     };
   })();
+  function sceneOf(el) { return el ? scenes.indexOf(el.closest(".scene")) : -1; }
 
   // 04 Hear: the waveform plays like an audio player (visual only). The playhead crosses it,
   // bars before it light up, and the transcript scrolls so the line being spoken holds its slot.
   // One clock drives all three: each speaker's cell holds two lines, a line becomes current the
   // moment the playhead reaches it, and its timestamp is the time the playhead shows then.
-  (function () {
+  if (document.getElementById("wave-bars")) (function () {
     var barsEl = document.getElementById("wave-bars");
     var ph = document.getElementById("playhead"), phTime = document.getElementById("playhead-time");
     var box = document.getElementById("transcript"), list = box.querySelector(".transcript__list");
@@ -342,7 +357,7 @@
       if (idx !== lastIdx && idx > -1) { speak(idx, idx < lastIdx || lastIdx === -1); lastIdx = idx; }
       raf = requestAnimationFrame(tick);
     }
-    controllers[3] = {
+    controllers[sceneOf(barsEl)] = {
       enter: function () { active = true; t0 = performance.now(); lastIdx = -1; lastBar = -1; bars.forEach(function (b) { b.classList.remove("is-played"); }); raf = requestAnimationFrame(tick); },
       leave: function () { active = false; cancelAnimationFrame(raf); }
     };
@@ -350,7 +365,7 @@
 
   // 05 Understand: the five steps light up in order, and the phase loader moves with them.
   // Clicking a step jumps to it; the order carries on from there.
-  (function () {
+  if (document.getElementById("understand-steps")) (function () {
     var steps = Array.prototype.slice.call(document.querySelectorAll("#understand-steps .step"));
     var seg = document.getElementById("understand-seg");
     var STEP_MS = 2400, timer = 0, i = 0;
@@ -360,14 +375,14 @@
     }
     function run() { clearInterval(timer); timer = setInterval(function () { i = (i + 1) % steps.length; show(); }, STEP_MS); }
     steps.forEach(function (s, j) { s.addEventListener("click", function () { i = j; show(); run(); }); });
-    controllers[4] = {
+    controllers[sceneOf(seg)] = {
       enter: function () { i = 0; show(); run(); },
       leave: function () { clearInterval(timer); }
     };
   })();
 
   // 08 Delivery: hovering or clicking a file moves the highlight and swaps the preview.
-  (function () {
+  if (document.getElementById("tree")) (function () {
     var tree = document.getElementById("tree");
     var files = Array.prototype.slice.call(tree.querySelectorAll(".file"));
     var nameEl = document.getElementById("preview-name"), body = document.getElementById("preview-body");
@@ -482,31 +497,37 @@
   document.addEventListener("visibilitychange", function () {
     var m = mediaFor(current);
     if (document.hidden) { videosIn(m).forEach(function (v) { v.pause(); }); if (controllers[current]) controllers[current].leave(); }
-    else { if (current !== 1) videosIn(m).forEach(play); if (controllers[current]) controllers[current].enter(); }
+    else { if (current !== SPEC) videosIn(m).forEach(play); if (controllers[current]) controllers[current].enter(); }
   });
 
-  // ---------- Form ----------
-  var form = document.getElementById("request-form");
-  var status = form.querySelector(".form__status");
-  var done = document.getElementById("form-done");
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var ok = true;
-    ["name", "email", "building"].forEach(function (n) {
-      var input = form.elements[n];
-      var bad = !input.value.trim() || (n === "email" && !/^\S+@\S+\.\S+$/.test(input.value));
-      input.closest(".field").classList.toggle("is-invalid", bad);
-      if (bad) ok = false;
+  // ---------- Forms ----------
+  // Each form lists its required fields in data-required and the message to show when they
+  // are missing in data-missing; the success panel is the next .form-done in its section.
+  Array.prototype.forEach.call(document.querySelectorAll("form.form"), function (form) {
+    var status = form.querySelector(".form__status");
+    var done = form.parentNode.querySelector(".form-done");
+    var required = (form.dataset.required || "").split(/\s+/).filter(Boolean);
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var ok = true;
+      required.forEach(function (n) {
+        var input = form.elements[n];
+        var v = input.value.trim();
+        var bad = !v || (n === "email" && !/^\S+@\S+\.\S+$/.test(v)) || (n === "phone" && v.replace(/\D/g, "").length < 7);
+        input.closest(".field").classList.toggle("is-invalid", bad);
+        if (bad) ok = false;
+      });
+      if (!ok) { status.textContent = form.dataset.missing || "Please fill in the required fields."; return; }
+      if (!FORM_ENDPOINT) { status.textContent = "Thanks. This form is not connected yet, so nothing was sent."; return; }
+      status.textContent = "Sending…";
+      var data = new FormData(form); data.append("form", form.id);
+      fetch(FORM_ENDPOINT, { method: "POST", headers: { Accept: "application/json" }, body: data })
+        .then(function (r) {
+          if (!r.ok) throw new Error(r.status);
+          form.reset(); form.hidden = true; if (done) done.hidden = false; status.textContent = "";
+        })
+        .catch(function () { status.textContent = "Something went wrong. Please try again."; });
     });
-    if (!ok) { status.textContent = "Please add your name, a valid work email and what you are building."; return; }
-    if (!FORM_ENDPOINT) { status.textContent = "Thanks. This form is not connected yet, so nothing was sent."; return; }
-    status.textContent = "Sending…";
-    fetch(FORM_ENDPOINT, { method: "POST", headers: { Accept: "application/json" }, body: new FormData(form) })
-      .then(function (r) {
-        if (!r.ok) throw new Error(r.status);
-        form.reset(); form.hidden = true; done.hidden = false; status.textContent = "";
-      })
-      .catch(function () { status.textContent = "Something went wrong. Please try again."; });
   });
 
   // ---------- Start ----------
@@ -517,7 +538,7 @@
   layout();
   window.addEventListener("resize", layout);
 
-  var startAt = parseInt(params.get("s"), 10);
+  var startAt = location.hash === "#request" ? REQUEST : parseInt(params.get("s"), 10);
   if (startAt > 0 && startAt <= last) { scenes[0].classList.remove("is-active"); scenes[startAt].classList.add("is-active"); current = startAt; }
   setState();
 

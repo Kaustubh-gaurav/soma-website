@@ -6,9 +6,10 @@
   <title>SOMA · Real-world surgical data for AI</title>
   <meta name="description" content="First-person video, synchronized audio, procedural context and frame-level annotations, collected to your specification.">
   <meta name="theme-color" content="#000000">
-  <link rel="preload" href="assets/fonts/Satoshi-Medium.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="assets/fonts/Satoshi-Bold.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="assets/fonts/Manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/video/01-home.jpg?v=4" as="image">
-  <link rel="stylesheet" href="css/style.css?v=10">
+  <link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body>
   <main class="stage" id="stage">
@@ -43,18 +44,18 @@
     <div class="board" id="board">
 
       <!-- 01 Hero -->
-      <section class="scene is-active" data-label="Home" aria-label="Home">
-        <div class="head ay" style="left:105px;top:512px">
+      <section class="scene is-active" data-geo="hero" data-label="Home" aria-label="Home">
+        <div class="head ay" style="left:105px;top:343px">
           <h1 class="t-display" style="width:785px">Real-world surgical data for AI.</h1>
-          <p class="t-b16 c-sec" style="width:560px;margin-top:24px">First-person video, synchronized audio, procedural context and frame-level annotations, collected to your specification.</p>
+          <p class="t-lead c-sec" style="width:785px;margin-top:24px">First-person video, synchronized audio, procedural context and frame-level annotations, collected to your specification.</p>
           <button class="btn btn--16" type="button" data-goto="request" style="margin-top:32px">Request Sample</button>
         </div>
       </section>
 
       <!-- 02 Dataset specimen -->
-      <section class="scene scene--specimen" data-label="Specimen" aria-label="Dataset specimen">
+      <section class="scene scene--specimen" data-geo="scrim" data-label="Specimen" aria-label="Dataset specimen">
         <div class="spec-time">
-          <div class="t-l14"><span id="spec-clock">00:42:12</span> / 04:21:18</div>
+          <div class="t-btn14"><span id="spec-clock">00:42:12</span> / 04:21:18</div>
           <div class="t-caps12 c-muted">Procedure duration</div>
         </div>
 
@@ -78,28 +79,28 @@
         </div>
 
         <div class="band band--wide ay" style="left:105px">
-          <span class="t-l14">CABG Surgery 024</span>
+          <span class="t-b16b">CABG Surgery 024</span>
           <span class="metrics">
-            <span><b class="t-l14">4K</b><i class="t-caps12 c-muted">Video</i></span>
-            <span><b class="t-l14">60 FPS</b><i class="t-caps12 c-muted">Capture rate</i></span>
-            <span><b class="t-l14">16</b><i class="t-caps12 c-muted">Instrument classes</i></span>
-            <span><b class="t-l14">11</b><i class="t-caps12 c-muted">Procedure phases</i></span>
-            <span><b class="t-l14">6</b><i class="t-caps12 c-muted">Audio channels</i></span>
+            <span><b class="t-b16b">4K</b><i class="t-caps14 c-muted">Video</i></span>
+            <span><b class="t-b16b">60 FPS</b><i class="t-caps14 c-muted">Capture rate</i></span>
+            <span><b class="t-b16b">16</b><i class="t-caps14 c-muted">Instrument classes</i></span>
+            <span><b class="t-b16b">11</b><i class="t-caps14 c-muted">Procedure phases</i></span>
+            <span><b class="t-b16b">6</b><i class="t-caps14 c-muted">Audio channels</i></span>
           </span>
         </div>
       </section>
 
       <!-- 03 See -->
-      <section class="scene" data-label="See" aria-label="See">
-        <div class="head ay" style="left:105px;top:671px">
-          <h2 class="t-display" style="width:785px">Surgery from every perspective.</h2>
+      <section class="scene" data-geo="scrim" data-label="See" aria-label="See">
+        <div class="head ay" style="left:105px;top:525px">
+          <h2 class="t-display" style="width:1000px">Surgery from every perspective.</h2>
         </div>
       </section>
 
       <!-- 04 Hear -->
-      <section class="scene scene--hear" data-label="Hear" aria-label="Hear">
-        <div class="head ay" style="left:105px;top:615px">
-          <h2 class="t-display" style="width:809px">Every voice. Every command. In context.</h2>
+      <section class="scene scene--hear" data-geo="scrim" data-label="Hear" aria-label="Hear">
+        <div class="head ay" style="left:105px;top:525px">
+          <h2 class="t-display" style="width:1000px">Every voice. Every command. In context.</h2>
         </div>
         <div class="transcript" id="transcript">
           <ol class="transcript__list">
@@ -129,51 +130,51 @@
       </section>
 
       <!-- 05 Understand -->
-      <section class="scene scene--understand" data-label="Understand" aria-label="Understand">
+      <section class="scene scene--understand" data-geo="scrim" data-label="Understand" aria-label="Understand">
         <div class="phase-box ax">
-          <div class="t-caps12 c-muted">Phase</div>
-          <div class="t-b16m" style="margin-top:4px">Distal Anastomosis</div>
+          <div class="t-caps14 c-muted">Phase</div>
+          <div class="t-b16b" style="margin-top:4px">Distal Anastomosis</div>
           <div class="phase-track phase-track--wide"><i id="understand-seg"></i></div>
         </div>
-        <div class="head ay" style="left:105px;top:615px">
-          <h2 class="t-display" style="width:809px">From footage to machine-understandable surgery.</h2>
+        <div class="head ay" style="left:105px;top:525px">
+          <h2 class="t-display" style="width:1000px">From footage to machine-understandable surgery.</h2>
         </div>
         <div class="band steps ay" id="understand-steps" style="left:105px">
-          <button type="button" class="step t-caps12">Raw footage</button>
-          <button type="button" class="step t-caps12">Instrument identified</button>
-          <button type="button" class="step t-caps12">Anatomy identified</button>
-          <button type="button" class="step t-caps12">Action identified</button>
-          <button type="button" class="step t-caps12">Procedure phase understood</button>
+          <button type="button" class="step t-caps14">Raw footage</button>
+          <button type="button" class="step t-caps14">Instrument identified</button>
+          <button type="button" class="step t-caps14">Anatomy identified</button>
+          <button type="button" class="step t-caps14">Action identified</button>
+          <button type="button" class="step t-caps14">Procedure phase understood</button>
         </div>
       </section>
 
       <!-- 06 Data scale -->
-      <section class="scene" data-label="Scale" aria-label="Data scale">
+      <section class="scene" data-geo="rows4" data-label="Scale" aria-label="Data scale">
         <div class="rows rows--scale">
-          <div class="row"><span class="t-display">2,500+</span><span class="t-b16 c-sec">Hours of surgical video</span></div>
-          <div class="row"><span class="t-display">1,000+</span><span class="t-b16 c-sec">Recorded procedures</span></div>
-          <div class="row"><span class="t-display">10+</span><span class="t-b16 c-sec">Medical and surgical specialties</span></div>
-          <div class="row"><span class="t-display">10,000+</span><span class="t-b16 c-sec">Clinicians across our healthcare network</span></div>
+          <div class="row"><span class="t-fig">2,500+</span><span class="t-l24 c-sec">Hours of surgical video</span></div>
+          <div class="row"><span class="t-fig">1,000+</span><span class="t-l24 c-sec">Recorded procedures</span></div>
+          <div class="row"><span class="t-fig">10+</span><span class="t-l24 c-sec">Medical and surgical specialties</span></div>
+          <div class="row"><span class="t-fig">10,000+</span><span class="t-l24 c-sec">Clinicians across our healthcare network</span></div>
         </div>
       </section>
 
       <!-- 07 Available data -->
-      <section class="scene" data-label="Data" aria-label="Available data">
+      <section class="scene" data-geo="rows4" data-label="Data" aria-label="Available data">
         <div class="rows rows--data">
-          <div class="row"><span class="t-title">Surgical video</span><span class="detail"><span class="t-b16 c-sec">Surgeon POV · Endoscopic · Operating room · Multi-camera capture</span><span class="t-caps12 c-muted">HD / 4K · High frame-rate available</span></span></div>
-          <div class="row"><span class="t-title">Surgical audio</span><span class="detail"><span class="t-b16 c-sec">Surgeon speech · Operating room conversation · Clinical commands · Multi-speaker recordings</span><span class="t-caps12 c-muted">Raw · diarized · transcribed · timestamped</span></span></div>
-          <div class="row"><span class="t-title">Procedural intelligence</span><span class="detail"><span class="t-b16 c-sec">Procedure phases · Instruments · Anatomy · Actions · Clinical events</span><span class="t-caps12 c-muted">Frame-level and event-level annotation</span></span></div>
-          <div class="row"><span class="t-title">Custom multimodal</span><span class="detail"><span class="t-b16 c-sec">Video · Audio · Clinical context · Devices · Sensors · Custom capture</span><span class="t-caps12 c-muted">Built to specification</span></span></div>
+          <div class="row"><span class="t-title">Surgical video</span><span class="detail"><span class="t-b16b c-sec">Surgeon POV · Endoscopic · Operating room · Multi-camera capture</span><span class="t-caps14 c-muted">HD / 4K · High frame-rate available</span></span></div>
+          <div class="row"><span class="t-title">Surgical audio</span><span class="detail"><span class="t-b16b c-sec">Surgeon speech · Operating room conversation · Clinical commands · Multi-speaker recordings</span><span class="t-caps14 c-muted">Raw · diarized · transcribed · timestamped</span></span></div>
+          <div class="row"><span class="t-title">Procedural intelligence</span><span class="detail"><span class="t-b16b c-sec">Procedure phases · Instruments · Anatomy · Actions · Clinical events</span><span class="t-caps14 c-muted">Frame-level and event-level annotation</span></span></div>
+          <div class="row"><span class="t-title">Custom multimodal</span><span class="detail"><span class="t-b16b c-sec">Video · Audio · Clinical context · Devices · Sensors · Custom capture</span><span class="t-caps14 c-muted">Built to specification</span></span></div>
         </div>
       </section>
 
       <!-- 08 What buyers receive -->
-      <section class="scene scene--delivery" data-label="Delivery" aria-label="What buyers receive">
-        <div class="head ay" style="left:105px;top:615px">
+      <section class="scene scene--delivery" data-geo="delivery" data-label="Delivery" aria-label="What buyers receive">
+        <div class="head ay" style="left:105px;top:416px">
           <h2 class="t-display" style="width:591px">Delivered ready for your pipeline.</h2>
         </div>
         <div class="tree ax" id="tree">
-          <div class="tree__head t-l14">CABG_024/</div>
+          <div class="tree__head t-b16b">CABG_024/</div>
           <div class="tree__rows">
             <button class="file is-folder" data-kind="folder">video/</button>
             <button class="file" data-kind="mp4">surgeon_pov.mp4</button>
@@ -192,96 +193,59 @@
           </div>
         </div>
         <div class="preview ax">
-          <div class="t-caps12 c-muted">Preview · <span id="preview-name">instruments.json</span></div>
+          <div class="t-caps14 c-muted">Preview · <span id="preview-name">instruments.json</span></div>
           <div class="preview__body" id="preview-body"></div>
         </div>
         <div class="band ay" style="left:105px">
-          <span class="t-caps12 c-muted" style="margin-right:0">Formats</span>
-          <span class="t-l14">JSON</span><span class="t-l14">CSV</span><span class="t-l14">COCO</span><span class="t-l14">YOLO</span><span class="t-l14">Custom schemas</span>
+          <span class="t-caps14 c-muted" style="margin-right:0">Formats</span>
+          <span class="t-b16b">JSON</span><span class="t-b16b">CSV</span><span class="t-b16b">COCO</span><span class="t-b16b">YOLO</span><span class="t-b16b">Custom schemas</span>
         </div>
       </section>
 
       <!-- 09 Custom collection -->
-      <section class="scene" data-label="Custom" aria-label="Custom collection">
-        <div class="head ay" style="left:105px;top:513px">
-          <h2 class="t-display" style="width:591px">The dataset you need may not exist yet.</h2>
-          <p class="t-b16 c-sec" style="width:591px;margin-top:24px">Tell us what your model needs. SOMA designs the capture protocol, works with the clinical network, collects the data, processes it and delivers it ready for your pipeline.</p>
+      <section class="scene" data-geo="custom" data-label="Custom" aria-label="Custom collection">
+        <div class="head ay" style="left:105px;top:424px">
+          <h2 class="t-display" style="width:543px">The dataset you need may not exist yet.</h2>
         </div>
         <div class="stages ax">
-          <div class="stage-row" style="--i:0"><span class="t-title">01 Define</span><span class="t-b16 c-sec">What your model needs.</span></div>
-          <div class="stage-row" style="--i:1"><span class="t-title">02 Design</span><span class="t-b16 c-sec">The capture protocol.</span></div>
-          <div class="stage-row" style="--i:2"><span class="t-title">03 Collect</span><span class="t-b16 c-sec">Across the clinical network.</span></div>
-          <div class="stage-row" style="--i:3"><span class="t-title">04 Process</span><span class="t-b16 c-sec">Synced, structured, annotated.</span></div>
-          <div class="stage-row" style="--i:4"><span class="t-title">05 Deliver</span><span class="t-b16 c-sec">Ready for your pipeline.</span></div>
+          <div class="stage-row" style="--i:0"><span class="t-title-s">01 Define</span><span class="t-b24m c-sec">What your model needs.</span></div>
+          <div class="stage-row" style="--i:1"><span class="t-title-s">02 Design</span><span class="t-b24m c-sec">The capture protocol.</span></div>
+          <div class="stage-row" style="--i:2"><span class="t-title-s">03 Collect</span><span class="t-b24m c-sec">Across the clinical network.</span></div>
+          <div class="stage-row" style="--i:3"><span class="t-title-s">04 Process</span><span class="t-b24m c-sec">Synced, structured, annotated.</span></div>
+          <div class="stage-row" style="--i:4"><span class="t-title-s">05 Deliver</span><span class="t-b24m c-sec">Ready for your pipeline.</span></div>
         </div>
       </section>
 
-      <!-- 11 Hospitals teaser -->
-      <section class="scene" data-label="Hospitals" aria-label="For hospitals">
-        <div class="head ay" style="left:105px;top:371px">
-          <h2 class="t-display" style="width:591px">Building the hospitals that create tomorrow’s AI data.</h2>
-          <p class="t-b16 c-sec" style="width:591px;margin-top:24px">SOMA works directly with hospitals to install the capture systems, data infrastructure and workflows required to continuously create AI-ready healthcare data.</p>
-          <span class="btn btn--16 is-disabled" aria-disabled="true" style="margin-top:32px">For Hospitals</span>
-        </div>
-        <!-- Three chips of one size that open out of one: Hospital data rises, AI ready data drops,
-             the secure data layer is revealed between them -->
-        <div class="chips axc" role="img" aria-label="Three stacked layers: hospital data, a secure data layer and AI ready data">
-          <img class="chip chip--data" src="assets/img/chip-data.webp?v=3" alt="" width="306" height="215">
-          <img class="chip chip--capture" src="assets/img/chip-capture.webp?v=3" alt="" width="306" height="214">
-          <img class="chip chip--hospitals" src="assets/img/chip-hospitals.webp?v=3" alt="" width="306" height="216">
-        </div>
-      </section>
-
-      <!-- 12 Request sample -->
-      <section class="scene scene--form" data-label="Request" aria-label="Request a sample">
-        <form class="form ac" id="request-form" novalidate>
+      <!-- 12 Request a sample -->
+      <section class="scene scene--form" data-geo="form-sample" data-norail data-label="Request" aria-label="Request a sample">
+        <form class="form form--sample ac" id="request-form" data-required="name email" data-missing="Please add your name and a valid email." novalidate>
           <div class="form__head">
-            <h2 class="t-display">Request a sample</h2>
-            <p class="t-b16 c-sec" style="width:600px;margin-top:16px">Tell us what you are building and the data you need. We will share relevant samples and continue the conversation directly.</p>
+            <h2 class="t-title-s">Request a sample</h2>
+            <p class="t-b16m c-sec">Tell us what you are building and the data you need. We will share relevant samples and continue the conversation directly.</p>
           </div>
-          <div class="form__row">
-            <label class="field"><span class="t-l14">Name</span><span class="field__input"><input name="name" type="text" placeholder="Full name" autocomplete="name" required></span></label>
-            <label class="field"><span class="t-l14">Work email</span><span class="field__input"><input name="email" type="email" placeholder="name@company.com" autocomplete="email" required></span></label>
+          <div class="form__fields">
+            <label class="field"><span class="t-caps12m">Name</span><span class="field__input"><input name="name" type="text" placeholder="Full name" autocomplete="name" required></span></label>
+            <label class="field"><span class="t-caps12m">Email</span><span class="field__input"><input name="email" type="email" placeholder="name@company.com" autocomplete="email" required></span></label>
+            <label class="field"><span class="t-caps12m">Phone number</span><span class="field__input"><input name="phone" type="tel" placeholder="+91 00000 00000" autocomplete="tel"></span></label>
           </div>
-          <div class="form__row">
-            <label class="field"><span class="t-l14">Company / institution</span><span class="field__input"><input name="company" type="text" placeholder="Company or institution" autocomplete="organization"></span></label>
-            <label class="field field--select"><span class="t-l14">What are you building?</span><span class="field__input">
-              <select name="building" required>
-                <option value="" selected disabled>AI model, Robotics, Computer vision…</option>
-                <option>AI model</option><option>Robotics</option><option>Computer vision</option><option>Healthcare AI</option><option>Medical device</option><option>Research</option><option>Other</option>
-              </select></span></label>
-          </div>
-          <label class="field"><span class="t-l14">What data are you looking for?</span><span class="field__input"><input name="data" type="text" placeholder="e.g. 500 hours of surgeon POV laparoscopic video with instrument and procedure-phase annotations"></span></label>
-          <fieldset class="field field--options">
-            <legend class="t-l14">Estimated data volume</legend>
-            <div class="options">
-              <label class="option"><input type="radio" name="volume" value="<100 hours"><span>&lt;100 hours</span></label>
-              <label class="option"><input type="radio" name="volume" value="100 to 500"><span>100 to 500</span></label>
-              <label class="option"><input type="radio" name="volume" value="500 to 1,000"><span>500 to 1,000</span></label>
-              <label class="option"><input type="radio" name="volume" value="1,000+"><span>1,000+</span></label>
-              <label class="option"><input type="radio" name="volume" value="Not sure yet"><span>Not sure yet</span></label>
-            </div>
-          </fieldset>
-          <label class="field field--half"><span class="field__label-row"><span class="t-l14">Phone / WhatsApp</span><span class="t-l14 c-dis">Optional</span></span><span class="field__input"><input name="phone" type="tel" placeholder="+91 00000 00000" autocomplete="tel"></span></label>
-          <button class="btn btn--16 btn--block" type="submit">Request Sample</button>
+          <button class="btn btn--16 btn--block" type="submit">Request a sample set</button>
           <p class="form__status t-b14" role="status" aria-live="polite"></p>
         </form>
-        <div class="form-done ac" id="form-done" hidden>
-          <h2 class="t-display">Request received.</h2>
-          <p class="t-b16 c-sec" style="width:560px;margin-top:16px">We’ll review your requirements and respond over email with the most relevant samples.</p>
+        <div class="form-done form-done--sample ac" hidden>
+          <h2 class="t-d56">Request received.</h2>
+          <p class="t-b16 c-sec">We’ll review your requirements and respond over email with the most relevant samples.</p>
         </div>
       </section>
 
       <!-- 13 Footer -->
-      <section class="scene scene--footer" data-label="Footer" aria-label="Footer">
+      <section class="scene scene--footer" data-geo="footer" data-norail data-label="Footer" aria-label="Footer">
         <div class="footer-brand ay">
-          <div class="t-logo">SOMA</div>
-          <div class="t-b16 c-sec" style="margin-top:12px">Real-world surgical data for AI.</div>
+          <div class="t-fig">SOMA</div>
+          <div class="t-lead c-sec">Real-world surgical data for AI.</div>
         </div>
-        <nav class="footer-links ay t-l14 c-sec" aria-label="Footer">
+        <nav class="footer-links ay t-nav16" aria-label="Footer">
           <button type="button" data-goto="1">Data</button>
-          <span aria-disabled="true">For Hospitals</span>
-          <span aria-disabled="true">About</span>
+          <a href="hospitals.html">For Hospitals</a>
           <span aria-disabled="true">Privacy</span>
           <span aria-disabled="true">Terms</span>
         </nav>
@@ -290,21 +254,21 @@
       <!-- ===== Fixed chrome on the board ===== -->
       <a class="logo t-logo" href="#" data-goto="0">SOMA</a>
       <nav class="nav" aria-label="Main">
-        <button class="nav__link t-l14" type="button" data-goto="0">Home</button>
-        <span class="nav__link t-l14 is-disabled" aria-disabled="true" title="Coming soon">For Hospitals</span>
+        <button class="nav__link t-nav14 is-current" type="button" data-goto="0" aria-current="page">Home</button>
+        <a class="nav__link t-nav14" href="hospitals.html">For Hospitals</a>
         <button class="btn btn--14" type="button" data-goto="request">Request Sample</button>
       </nav>
       <nav class="rail" aria-label="Sections"><ol class="rail__list"></ol></nav>
 
       <div class="backed ay">
         <span class="backed__group">
-          <span class="t-caps12 c-muted">Backed by</span>
+          <span class="t-caps16 c-sec">Backed by</span>
           <span class="backed__logos">
             <img src="assets/img/ycombinator.png" alt="Y Combinator" width="116" height="24">
             <img src="assets/img/drmorepen.png" alt="Dr. Morepen" width="126" height="40">
           </span>
         </span>
-        <span class="t-b16m c-sec">10,000+ clinician network</span>
+        <span class="t-nav16 c-sec">10,000+ clinician network</span>
       </div>
     </div>
 
@@ -329,6 +293,6 @@
     </div>
   </main>
 
-  <script src="js/main.js?v=8"></script>
+  <script src="js/main.js?v=9"></script>
 </body>
 </html>
