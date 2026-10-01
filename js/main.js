@@ -1,8 +1,8 @@
 /* SOMA V2. Drives both pages: index.html (data buyers) and hospitals.html (For Hospitals).
    One fixed stage. Scroll, arrow keys, a swipe or the rail move one section at a time. The frame
    rules animate to each section's geometry, so lines slide, grow and retract between screens.
-   Sections never advance on their own; inside them, the specimen layers, the Hear transcript and
-   the Understand steps run on their own clocks. */
+   A section also moves on by itself once its clip has played (5 s when it has none); inside it,
+   the specimen layers, the Hear transcript and the Understand steps run on their own clocks. */
 (function () {
   "use strict";
 
@@ -48,7 +48,7 @@
       case "scrim": g.scrim = 1; break;                                                 // 02 to 05
       case "rows4": g.col = 365; g.rows = split(4); g.rx = 1; g.panel = 1; break;       // 06, 07
       case "delivery": g.col = 720 + DX; g.col2 = 960 + DX; break;                      // 08 Delivery
-      case "custom": g.scrim = 1; g.col = 722 + DX; g.rows = split(5); g.panel = 1; break; // 09 Custom
+      case "custom": g.scrim = 1; g.col = 722 + DX; g.rows = split(5); g.panel = 1; g.blur = 1; break; // 09 Custom
       case "h-rows4": g.col = 722 + DX; g.rows = split(4); g.rx = 1; g.panel = 1; break; // Hospitals: infrastructure
       case "h-col": g.col = 722 + DX; break;                                            // Hospitals: opportunity, start small
       case "form-sample":                                                               // 12 Request a sample
@@ -136,6 +136,7 @@
     stage.classList.toggle("no-rail", !!g.noRail);
     stage.classList.toggle("show-backed", !!g.backed);
     stage.classList.toggle("backed-stack", !!g.stack);
+    stage.classList.toggle("panel-blur", !!g.blur);
   }
 
   // ---------- Fit the board to the window ----------
@@ -384,15 +385,14 @@
     };
   })();
 
-  // 05 Understand: the five steps light up in order, and the phase loader moves with them.
+  // 05 Understand: the five steps light up in order.
   // Clicking a step jumps to it; the order carries on from there.
   if (document.getElementById("understand-steps")) (function () {
     var steps = Array.prototype.slice.call(document.querySelectorAll("#understand-steps .step"));
-    var seg = document.getElementById("understand-seg");
+    var seg = document.getElementById("understand-steps");
     var STEP_MS = 2000, timer = 0, i = 0;
     function show() {
       steps.forEach(function (s, j) { s.classList.toggle("is-done", j < i); s.classList.toggle("is-active", j === i); s.setAttribute("aria-pressed", j === i); });
-      seg.style.setProperty("--seg", Math.round((270 - 40) * i / (steps.length - 1)) + "px");
     }
     function run() { clearInterval(timer); timer = setInterval(function () { i = (i + 1) % steps.length; show(); }, STEP_MS); }
     steps.forEach(function (s, j) { s.addEventListener("click", function () { i = j; show(); run(); }); });
@@ -467,6 +467,32 @@
     if (controllers[next]) controllers[next].enter();
     setTimeout(function () { from.classList.remove("is-leaving"); }, late + 50);
     setTimeout(function () { busy = false; }, reduceMotion ? 50 : LEAVE_MS + late);
+    armAuto();
+  }
+
+  // Auto advance: a section with footage moves on once its clip has played through (the longest
+  // one when it has several); a section without footage moves on after 5 s. The forms wait for
+  // the visitor and the last section stays. Any move, by hand or not, restarts the count.
+  // ?still turns it off.
+  var AUTO_MS = 5000, autoTimer = 0, autoPoll = 0, started = false;
+  function stopAuto() { clearTimeout(autoTimer); clearInterval(autoPoll); }
+  function armAuto() {
+    stopAuto();
+    if (!started || params.has("still")) return;
+    var at = current;
+    if (at >= last || scenes[at].classList.contains("scene--form")) return;
+    var vs = videosIn(mediaFor(at));
+    if (!vs.length) { autoTimer = setTimeout(function () { if (current === at) go(at + 1); }, AUTO_MS); return; }
+    var main = vs.reduce(function (a, b) { return (b.duration || 0) > (a.duration || 0) ? b : a; });
+    var prevT = 0, moved = false;
+    autoPoll = setInterval(function () {
+      if (current !== at) return stopAuto();
+      var d = main.duration, t = main.currentTime;
+      if (t > 0.3) moved = true;
+      // done at the end, or when a looping clip wraps round to the start
+      if ((isFinite(d) && d > 0 && t >= d - 0.12) || (moved && t < prevT - 0.5)) { stopAuto(); go(at + 1); }
+      prevT = t;
+    }, 100);
   }
 
   function setState() {
@@ -480,14 +506,52 @@
   }
 
   // ---------- Input ----------
-  var wheelSum = 0, wheelQuietTimer = null, wheelLocked = false;
+  // Scroll moves by stride and speed. A gesture is every wheel event until the wheel has been quiet
+  // for 200 ms. A small scroll moves one section; every further STRIDE of travel adds one, and a
+  // fast flick adds one or two more. The move is decided 120 ms in (or as soon as the wheel goes
+  // quiet), so a big scroll jumps straight to its section instead of stepping through each one;
+  // if the same gesture keeps going, the extra sections are added once the current move lands.
+  var STRIDE = 360, QUIET_MS = 200, DECIDE_MS = 120;
+  var gest = null, pendingTo = null, quietTimer = 0, decideTimer = 0;
+  function stepsFor(g) {
+    var dist = Math.abs(g.sum);
+    if (dist < WHEEL_THRESHOLD) return 0;
+    var n = 1 + Math.floor(Math.max(0, dist - WHEEL_THRESHOLD) / STRIDE);
+    var speed = g.peak;                                     // px per ms over the fastest 100 ms
+    if (dist > 2 * WHEEL_THRESHOLD) n += speed > 4 ? 2 : speed > 2 ? 1 : 0;
+    return n;
+  }
+  function wheelTarget() {
+    if (!gest || !gest.decided) return;
+    var to = Math.max(0, Math.min(last, gest.base + gest.dir * stepsFor(gest)));
+    if (to === current) return;
+    if (busy) { pendingTo = to; return; }
+    pendingTo = null; go(to);
+  }
+  function decide() { clearTimeout(decideTimer); if (gest && !gest.decided) { gest.decided = true; wheelTarget(); } }
+  // A move queued during a transition lands when that transition ends.
+  setInterval(function () { if (pendingTo != null && !busy) { var to = pendingTo; pendingTo = null; if (to !== current) go(to); } }, 60);
   stage.addEventListener("wheel", function (e) {
     e.preventDefault();
-    clearTimeout(wheelQuietTimer);
-    wheelQuietTimer = setTimeout(function () { wheelLocked = false; wheelSum = 0; }, 180);
-    if (wheelLocked || busy) return;
-    wheelSum += e.deltaY;
-    if (Math.abs(wheelSum) >= WHEEL_THRESHOLD) { go(current + (wheelSum > 0 ? 1 : -1)); wheelLocked = true; wheelSum = 0; }
+    var now = performance.now();
+    var dy = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaMode === 2 ? e.deltaY * 800 : e.deltaY;
+    if (!dy) return;
+    var dir = dy > 0 ? 1 : -1;
+    if (!gest || gest.dir !== dir) {
+      gest = { dir: dir, sum: 0, base: current, t0: now, hist: [], peak: 0, decided: false };
+      clearTimeout(decideTimer); decideTimer = setTimeout(decide, DECIDE_MS);
+    }
+    gest.sum += dy;
+    gest.hist.push([now, Math.abs(dy)]);
+    while (gest.hist.length && now - gest.hist[0][0] > 100) gest.hist.shift();
+    if (gest.hist.length >= 3) {                            // speed needs a few events; one notch is not a flick
+      var span = Math.max(40, now - gest.hist[0][0]);
+      var recent = gest.hist.reduce(function (t, h) { return t + h[1]; }, 0);
+      gest.peak = Math.max(gest.peak, recent / span);
+    }
+    if (gest.decided) wheelTarget();
+    clearTimeout(quietTimer);
+    quietTimer = setTimeout(function () { decide(); gest = null; }, QUIET_MS);
   }, { passive: false });
 
   var touchY = null;
@@ -566,6 +630,7 @@
   function begin() {
     showMedia(current, -1);
     if (controllers[current]) controllers[current].enter();
+    started = true; armAuto();
     // Warm the rest, in order, once the first section is playing.
     var order = medias.map(function (m) { return +m.dataset.scene; }).filter(function (i) { return i !== current; });
     (function nextInQueue() {
