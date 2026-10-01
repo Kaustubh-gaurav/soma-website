@@ -95,11 +95,15 @@
     }
     el.style.transform = tr;
   }
+  // The row rules (r1 to r4) are horizontal, col and col2 vertical. Orientation comes from the
+  // piece, not its size: a row can clamp to 1 px wide (a form box ending left of the last column)
+  // and would then read as vertical and never retract.
   function seg(el, x, y, w, h, on) {
-    var tr = function (k) { return "translate(" + x + "px," + y + "px) scale(" + (w === 1 ? 1 : k) + "," + (h === 1 ? 1 : k) + ")"; };
+    var horiz = el.dataset.f.charAt(0) === "r";
+    var tr = function (k) { return "translate(" + x + "px," + y + "px) scale(" + (horiz ? k : 1) + "," + (horiz ? 1 : k) + ")"; };
     if (on && !el._on) snap(el, function () { el.style.width = w + "px"; el.style.height = h + "px"; el.style.transform = tr(0); });
     el._on = !!on;
-    if (!on) { el.style.transform = el.style.transform.replace(/scale\([^)]*\)/, "scale(" + (w === 1 ? 1 : 0) + "," + (h === 1 ? 1 : 0) + ")"); return; }
+    if (!on) { el.style.transform = el.style.transform.replace(/scale\([^)]*\)/, "scale(" + (horiz ? 0 : 1) + "," + (horiz ? 1 : 0) + ")"); return; }
     el.style.width = w + "px"; el.style.height = h + "px";
     el.style.transform = tr(1);
   }
