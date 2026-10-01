@@ -259,40 +259,50 @@
   // ---------- Section controllers ----------
   var controllers = {};
 
-  // 02 Specimen: five layers, each one play of the clip; the underline under the active layer
-  // fills as the clip plays, and the next layer starts when the clip ends. The centre stays clear:
-  // a layer changes the footage and the readout under the clock; the band stays as designed.
+  // 02 Specimen: one 10 s clock, five layers of 2 s each; the underline under the active layer
+  // fills over its 2 s. The clips loop on their own, a layer only swaps which one shows. The centre
+  // stays clear: a layer changes the footage and the readout under the clock; the band stays as designed.
+  // The transcript lines carry their times on the same clock and light up as it reaches them.
   if (SPEC > -1) (function () {
     var scene = scenes[SPEC];
     var raw = stage.querySelector(".spec-vid--raw"), ann = stage.querySelector(".spec-vid--annotated");
     var toggles = Array.prototype.slice.call(scene.querySelectorAll(".toggle"));
     var layers = Array.prototype.slice.call(scene.querySelectorAll(".readout__item"));
+    var said = Array.prototype.slice.call(scene.querySelectorAll(".said li"));
     var clock = document.getElementById("spec-clock");
-    var layer = 0, active = false, raf = 0, v = raw;
+    var LAYER_MS = 2000, CYCLE = LAYER_MS * toggles.length;
+    var layer = -1, active = false, raf = 0, t0 = 0, v = raw;
     function videoFor(l) { return l === 1 ? ann : raw; }
     function set(l) {
       layer = l;
       var nv = videoFor(l);
-      [raw, ann].forEach(function (x) { if (x !== nv) { x.pause(); x.classList.remove("is-shown"); } });
-      v = nv; v.classList.add("is-shown");
-      try { v.currentTime = 0; } catch (e) {}
-      play(v);
+      if (nv !== v || !nv.classList.contains("is-shown")) {
+        [raw, ann].forEach(function (x) { if (x !== nv) { x.pause(); x.classList.remove("is-shown"); } });
+        v = nv; v.classList.add("is-shown");
+        play(v);
+      }
       toggles.forEach(function (t, i) { t.classList.toggle("is-active", i === l); t.setAttribute("aria-selected", i === l); t.style.setProperty("--progress", 0); });
       layers.forEach(function (x) { x.classList.toggle("is-on", +x.dataset.layer === l); });
     }
-    function tick() {
+    function tick(now) {
       if (!active) return;
-      var d = isFinite(v.duration) && v.duration > 0 ? v.duration : 5.5;
-      var p = Math.min(1, v.currentTime / d);
-      var t = toggles[layer]; if (t) t.style.setProperty("--progress", p.toFixed(4));
-      var sec = 12 + Math.floor(v.currentTime);
+      var ms = (now - t0) % CYCLE;
+      var l = Math.floor(ms / LAYER_MS);
+      if (l !== layer) set(l);
+      var t = toggles[layer]; if (t) t.style.setProperty("--progress", ((ms - l * LAYER_MS) / LAYER_MS).toFixed(4));
+      var sec = 12 + Math.floor(ms / 1000);
       clock.textContent = "00:42:" + (sec < 10 ? "0" : "") + sec;
+      said.forEach(function (li) {                          // spoken now = bright, already said = sub, still to come = muted
+        var at = +li.dataset.at, end = +li.dataset.end;
+        li.classList.toggle("is-now", ms >= at && ms < end);
+        li.classList.toggle("is-said", ms >= end);
+      });
       raf = requestAnimationFrame(tick);
     }
-    [raw, ann].forEach(function (x) { x.addEventListener("ended", function () { if (active && x === v) set((layer + 1) % toggles.length); }); });
-    toggles.forEach(function (t, i) { t.addEventListener("click", function () { set(i); }); });
+    [raw, ann].forEach(function (x) { x.loop = true; });
+    toggles.forEach(function (t, i) { t.addEventListener("click", function () { t0 = performance.now() - i * LAYER_MS; }); });
     controllers[SPEC] = {
-      enter: function () { active = true; set(0); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); },
+      enter: function () { active = true; layer = -1; [raw, ann].forEach(function (x) { x.classList.remove("is-shown"); try { x.currentTime = 0; } catch (e) {} }); t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); },
       leave: function () { active = false; cancelAnimationFrame(raf); setTimeout(function () { if (current !== SPEC) { raw.pause(); ann.pause(); } }, LEAVE_MS); }
     };
   })();
@@ -368,7 +378,7 @@
   if (document.getElementById("understand-steps")) (function () {
     var steps = Array.prototype.slice.call(document.querySelectorAll("#understand-steps .step"));
     var seg = document.getElementById("understand-seg");
-    var STEP_MS = 2400, timer = 0, i = 0;
+    var STEP_MS = 2000, timer = 0, i = 0;
     function show() {
       steps.forEach(function (s, j) { s.classList.toggle("is-done", j < i); s.classList.toggle("is-active", j === i); s.setAttribute("aria-pressed", j === i); });
       seg.style.setProperty("--seg", Math.round((270 - 40) * i / (steps.length - 1)) + "px");

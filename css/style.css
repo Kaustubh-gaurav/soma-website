@@ -195,6 +195,10 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 .readout__item.is-on { opacity: 1; transform: none; transition-delay: 120ms; }
 .keys { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .keys li { display: flex; align-items: center; gap: 8px; color: var(--white); }
+.said { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.said li { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; color: var(--white-muted); transition: color 200ms ease; }
+.said li.is-said { color: var(--white-sub); }
+.said li.is-now { color: var(--white); }
 .keys i { width: 8px; height: 8px; background: var(--sw); flex: none; }
 
 /* ---------- 04 Hear ----------
