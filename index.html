@@ -9,7 +9,7 @@
   <link rel="preload" href="assets/fonts/Satoshi-Bold.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="assets/fonts/Manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/video/01-home.jpg?v=4" as="image">
-  <link rel="stylesheet" href="css/style.css?v=14">
+  <link rel="stylesheet" href="css/style.css?v=15">
 </head>
 <body>
   <main class="stage" id="stage">
@@ -19,8 +19,7 @@
       <div class="media" data-scene="0"><video src="assets/video/01-home.mp4?v=4" poster="assets/video/01-home.jpg?v=4" muted playsinline loop preload="auto"></video></div>
 
       <div class="media media--specimen" data-scene="1">
-        <video class="spec-vid spec-vid--raw" style="--cx:0.0448;--cy:0.0034;--cw:0.8137;--ch:0.9501;--ar:1.7814" src="assets/video/04-fine-motion.mp4?v=4" poster="assets/video/04-fine-motion.jpg?v=4" muted playsinline preload="metadata"></video>
-        <video class="spec-vid spec-vid--annotated" src="assets/video/05-annotated.mp4?v=4" poster="assets/video/05-annotated.jpg?v=4" muted playsinline preload="metadata"></video>
+        <video class="spec-vid is-shown" id="spec-vid" style="--cx:0.0709;--cy:0;--cw:0.8582;--ch:1" src="assets/video/09-specimen.mp4?v=6" poster="assets/video/09-specimen.jpg?v=6" muted playsinline loop preload="auto"></video>
       </div>
 
       <div class="media-group" data-scene="2">
@@ -29,8 +28,8 @@
         <div class="media media--bottom"><video src="assets/video/08-or-room.mp4?v=5" poster="assets/video/08-or-room.jpg?v=5" muted playsinline loop preload="metadata"></video></div>
       </div>
 
-      <div class="media" data-scene="3"><video src="assets/video/03-multiview.mp4?v=4" poster="assets/video/03-multiview.jpg?v=4" muted playsinline loop preload="metadata"></video></div>
-      <div class="media" data-scene="4" style="--cx:0.1917;--cy:0;--cw:0.6166;--ch:0.7185"><video src="assets/video/02-egocentric.mp4?v=4" poster="assets/video/02-egocentric.jpg?v=4" muted playsinline loop preload="metadata"></video></div>
+      <div class="media" data-scene="3"><video id="hear-vid" src="assets/video/10-hear.mp4?v=6" poster="assets/video/10-hear.jpg?v=6" muted playsinline loop preload="metadata"></video></div>
+      <div class="media" data-scene="4"><video src="assets/video/11-understand.mp4?v=6" poster="assets/video/11-understand.jpg?v=6" muted playsinline loop preload="metadata"></video></div>
       <div class="media" data-scene="8"><video src="assets/video/07-headset.mp4?v=4" poster="assets/video/07-headset.jpg?v=4" muted playsinline loop preload="metadata"></video></div>
     </div>
 
@@ -54,25 +53,12 @@
 
       <!-- 02 Dataset specimen -->
       <section class="scene scene--specimen" data-geo="scrim" data-label="Specimen" aria-label="Dataset specimen">
-        <div class="spec-time">
-          <div class="t-btn14"><span id="spec-clock">00:42:12</span> / 04:21:18</div>
-          <div class="t-caps12 c-muted">Procedure duration</div>
-        </div>
-
-        <!-- Readout under the clock: what the current layer adds -->
-        <div class="readout">
-          <div class="readout__item" data-layer="0"><div class="t-caps12 c-muted">Layer</div><div class="t-b16m">Raw footage</div><div class="t-b14 c-sec">Surgeon POV, as captured</div></div>
-          <div class="readout__item" data-layer="1"><div class="t-caps12 c-muted">Instruments tracked</div>
-            <ul class="keys"><li><span class="t-b14">Needle driver</span><i style="--sw:var(--white)"></i></li><li><span class="t-b14">Forceps</span><i style="--sw:var(--white-sub)"></i></li><li><span class="t-b14">Suction</span><i style="--sw:var(--white-muted)"></i></li></ul></div>
-          <div class="readout__item" data-layer="2"><div class="t-caps12 c-muted">Anatomy segmented</div>
-            <ul class="keys"><li><span class="t-b14">Coronary artery</span><i style="--sw:var(--white)"></i></li><li><span class="t-b14">Graft vessel</span><i style="--sw:var(--white-muted)"></i></li></ul></div>
-          <div class="readout__item" data-layer="3"><div class="t-caps12 c-muted">Phase</div><div class="t-b16m">07 of 11</div><div class="t-b14 c-sec">Distal Anastomosis</div></div>
-          <div class="readout__item" data-layer="4"><div class="t-caps12 c-muted">Transcript</div>
-            <ol class="said">
-              <li data-at="0" data-end="1200"><span class="t-caps12">00:42:12</span><span class="t-b14">the suction now</span></li>
-              <li data-at="6800" data-end="7500"><span class="t-caps12">00:42:18</span><span class="t-b14">bone wax</span></li>
-              <li data-at="9000" data-end="10000"><span class="t-caps12">00:42:21</span><span class="t-b14">pass the bone wax quickly</span></li>
-            </ol></div>
+        <div class="transcript" id="spec-transcript" data-from="0">
+          <ol class="transcript__list">
+            <li data-at="0" data-end="1200"><span class="t-caps12">00:00:00</span><span class="line">the suction now</span><i class="tick"></i></li>
+            <li data-at="6800" data-end="7500"><span class="t-caps12">00:00:06</span><span class="line">bone wax</span><i class="tick"></i></li>
+            <li data-at="9000" data-end="10000"><span class="t-caps12">00:00:09</span><span class="line">pass the bone wax quickly</span><i class="tick"></i></li>
+          </ol>
         </div>
 
         <div class="toggles ay" role="tablist" aria-label="Dataset layers">
@@ -107,7 +93,7 @@
         <div class="head ay" style="left:105px;top:525px">
           <h2 class="t-display" style="width:1000px">Every voice. Every command. In context.</h2>
         </div>
-        <div class="transcript" id="transcript" data-from="60000" data-loop="10000">
+        <div class="transcript" id="transcript" data-from="60000">
           <ol class="transcript__list">
             <li data-at="61070" data-end="65370"><span class="t-caps12">00:01:01 · Speaker 2</span><span class="line">Because there will be a little more pressure, it is preferable to tie.</span><i class="tick"></i></li>
             <li data-at="66910" data-end="68670"><span class="t-caps12">00:01:06 · Speaker 2</span><span class="line">That is an arterial feeder.</span><i class="tick"></i></li>
@@ -284,6 +270,6 @@
     </div>
   </main>
 
-  <script src="js/main.js?v=11"></script>
+  <script src="js/main.js?v=12"></script>
 </body>
 </html>

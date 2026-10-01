@@ -259,89 +259,92 @@
   // ---------- Section controllers ----------
   var controllers = {};
 
-  // 02 Specimen: one 10 s clock, five layers of 2 s each; the underline under the active layer
-  // fills over its 2 s. The clips loop on their own, a layer only swaps which one shows. The centre
-  // stays clear: a layer changes the footage and the readout under the clock; the band stays as designed.
-  // The transcript lines carry their times on the same clock and light up as it reaches them.
-  if (SPEC > -1) (function () {
-    var scene = scenes[SPEC];
-    var raw = stage.querySelector(".spec-vid--raw"), ann = stage.querySelector(".spec-vid--annotated");
-    var toggles = Array.prototype.slice.call(scene.querySelectorAll(".toggle"));
-    var layers = Array.prototype.slice.call(scene.querySelectorAll(".readout__item"));
-    var said = Array.prototype.slice.call(scene.querySelectorAll(".said li"));
-    var clock = document.getElementById("spec-clock");
-    var LAYER_MS = 2000, CYCLE = LAYER_MS * toggles.length;
-    var layer = -1, active = false, raf = 0, t0 = 0, v = raw;
-    function videoFor(l) { return l === 1 ? ann : raw; }
-    function set(l) {
-      layer = l;
-      var nv = videoFor(l);
-      if (nv !== v || !nv.classList.contains("is-shown")) {
-        [raw, ann].forEach(function (x) { if (x !== nv) { x.pause(); x.classList.remove("is-shown"); } });
-        v = nv; v.classList.add("is-shown");
-        play(v);
-      }
-      toggles.forEach(function (t, i) { t.classList.toggle("is-active", i === l); t.setAttribute("aria-selected", i === l); t.style.setProperty("--progress", 0); });
-      layers.forEach(function (x) { x.classList.toggle("is-on", +x.dataset.layer === l); });
-    }
-    function tick(now) {
-      if (!active) return;
-      var ms = (now - t0) % CYCLE;
-      var l = Math.floor(ms / LAYER_MS);
-      if (l !== layer) set(l);
-      var t = toggles[layer]; if (t) t.style.setProperty("--progress", ((ms - l * LAYER_MS) / LAYER_MS).toFixed(4));
-      var sec = 12 + Math.floor(ms / 1000);
-      clock.textContent = "00:42:" + (sec < 10 ? "0" : "") + sec;
-      said.forEach(function (li) {                          // spoken now = bright, already said = sub, still to come = muted
-        var at = +li.dataset.at, end = +li.dataset.end;
-        li.classList.toggle("is-now", ms >= at && ms < end);
-        li.classList.toggle("is-said", ms >= end);
-      });
-      raf = requestAnimationFrame(tick);
-    }
-    [raw, ann].forEach(function (x) { x.loop = true; });
-    toggles.forEach(function (t, i) { t.addEventListener("click", function () { t0 = performance.now() - i * LAYER_MS; }); });
-    controllers[SPEC] = {
-      enter: function () { active = true; layer = -1; [raw, ann].forEach(function (x) { x.classList.remove("is-shown"); try { x.currentTime = 0; } catch (e) {} }); t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); },
-      leave: function () { active = false; cancelAnimationFrame(raf); setTimeout(function () { if (current !== SPEC) { raw.pause(); ann.pause(); } }, LEAVE_MS); }
-    };
-  })();
-  function sceneOf(el) { return el ? scenes.indexOf(el.closest(".scene")) : -1; }
-
-  // 04 Hear: an audio player for a real 10 s window of the recording (01:00 to 01:10). The lines in
-  // the transcript carry their own start and end times; the waveform only has speech where a line
-  // is spoken, with the speaker named above that stretch. The playhead crosses it, bars before it
-  // light up, and the words of the line being spoken light one by one as the playhead passes them.
-  if (document.getElementById("wave-bars")) (function () {
-    var barsEl = document.getElementById("wave-bars"), spk = document.getElementById("wave-speakers");
-    var ph = document.getElementById("playhead"), phTime = document.getElementById("playhead-time");
-    var box = document.getElementById("transcript");
-    var FROM = +box.dataset.from || 0, LOOP = +box.dataset.loop || 10000;
+  // A transcript column: each line carries its start and end (ms, on its video's clock, offset by
+  // data-from). The line being spoken is white and its words light as the clock passes them;
+  // lines already said stay sub, lines still to come stay muted.
+  function transcriptOf(box) {
+    var from = +box.dataset.from || 0;
     var lines = Array.prototype.slice.call(box.querySelectorAll("li")).map(function (li) {
       var line = li.querySelector(".line");
       var words = line.textContent.trim().split(/\s+/);
       line.innerHTML = words.map(function (w) { return "<span>" + w + "</span>"; }).join(" ");
-      var who = li.querySelector(".t-caps12").textContent.split("·").pop().trim();
-      return { li: li, words: Array.prototype.slice.call(line.children), at: +li.dataset.at - FROM, end: +li.dataset.end - FROM, who: who };
+      var who = li.querySelector(".t-caps12").textContent.split("·");
+      return { li: li, words: Array.prototype.slice.call(line.children), at: +li.dataset.at - from, end: +li.dataset.end - from, who: who.length > 1 ? who.pop().trim() : "" };
     });
-    var labels = lines.map(function (l) {                   // speaker name over the stretch they speak
-      var s = document.createElement("span");
-      s.className = "t-caps12";
-      s.textContent = l.who;
-      s.style.left = (l.at / LOOP * 100).toFixed(2) + "%";
-      s.style.width = ((l.end - l.at) / LOOP * 100).toFixed(2) + "%";
-      spk.appendChild(s); return s;
-    });
+    return {
+      from: from, lines: lines,
+      update: function (ms) {
+        lines.forEach(function (l) {
+          var on = ms >= l.at && ms < l.end, done = ms >= l.end;
+          l.li.classList.toggle("is-active", on);
+          l.li.classList.toggle("is-past", done);
+          var lit = done ? l.words.length : on ? Math.ceil((ms - l.at) / (l.end - l.at) * l.words.length) : 0;
+          l.words.forEach(function (w, k) { w.classList.toggle("is-lit", k < lit); });
+        });
+      }
+    };
+  }
+
+  // 02 Specimen: the clip is the five layers back to back, 2 s each (raw, instruments, anatomy,
+  // phase, transcript), so the clip's own time drives everything: which layer is lit, how far its
+  // underline has filled, and the transcript. Clicking a layer seeks the clip to that layer.
+  if (SPEC > -1) (function () {
+    var scene = scenes[SPEC];
+    var v = document.getElementById("spec-vid");
+    var toggles = Array.prototype.slice.call(scene.querySelectorAll(".toggle"));
+    var tr = transcriptOf(document.getElementById("spec-transcript"));
+    var LAYER = 2, layer = -1, active = false, raf = 0;
+    function set(l) {
+      layer = l;
+      toggles.forEach(function (t, i) { t.classList.toggle("is-active", i === l); t.setAttribute("aria-selected", i === l); if (i !== l) t.style.setProperty("--progress", 0); });
+    }
+    function tick() {
+      if (!active) return;
+      var t = v.currentTime || 0;
+      var l = Math.min(toggles.length - 1, Math.floor(t / LAYER));
+      if (l !== layer) set(l);
+      toggles[l].style.setProperty("--progress", Math.min(1, (t - l * LAYER) / LAYER).toFixed(4));
+      tr.update(t * 1000);
+      raf = requestAnimationFrame(tick);
+    }
+    toggles.forEach(function (t, i) { t.addEventListener("click", function () { try { v.currentTime = i * LAYER + 0.01; } catch (e) {} play(v); }); });
+    controllers[SPEC] = {
+      enter: function () { active = true; layer = -1; try { v.currentTime = 0; } catch (e) {} play(v); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); },
+      leave: function () { active = false; cancelAnimationFrame(raf); setTimeout(function () { if (current !== SPEC) v.pause(); }, LEAVE_MS); }
+    };
+  })();
+  function sceneOf(el) { return el ? scenes.indexOf(el.closest(".scene")) : -1; }
+
+  // 04 Hear: an audio player over the clip, which is 01:00 onwards of the recording. The clip's own
+  // time drives it: the playhead, the bars before it, the speaker named over each stretch they
+  // speak, and the words of the line being spoken. The waveform only has speech inside a line.
+  if (document.getElementById("wave-bars")) (function () {
+    var barsEl = document.getElementById("wave-bars"), spk = document.getElementById("wave-speakers");
+    var ph = document.getElementById("playhead"), phTime = document.getElementById("playhead-time");
+    var v = document.getElementById("hear-vid");
+    var tr = transcriptOf(document.getElementById("transcript")), lines = tr.lines;
+    var DUR = 11.83 * 1000;                                 // until the clip's metadata says otherwise
+    var labels = [];
+    function placeLabels() {
+      labels.forEach(function (s) { s.remove(); });
+      labels = lines.map(function (l) {
+        var s = document.createElement("span");
+        s.className = "t-caps12";
+        s.textContent = l.who;
+        s.style.left = (l.at / DUR * 100).toFixed(2) + "%";
+        spk.appendChild(s); return s;
+      });
+    }
     var W = 0, BAR = 5, bars = [];
-    var active = false, raf = 0, t0 = 0, lastBar = -1;
-    rebuildWave = function () {
+    var active = false, raf = 0, lastBar = -1;
+    rebuildWave = function (force) {
       var w = barsEl.offsetWidth || 1088;
-      if (bars.length && Math.abs(w - W) < 2) return;
+      if (!force && bars.length && Math.abs(w - W) < 2) return;
       W = w;
       barsEl.innerHTML = ""; bars = []; lastBar = -1;
       var N = Math.floor(W / BAR);
       for (var i = 0; i < N; i++) {
-        var ms = (i * BAR + 1) / W * LOOP;
+        var ms = (i * BAR + 1) / W * DUR;
         var inLine = lines.some(function (l) { return ms >= l.at && ms < l.end; });
         var speech = inLine && Math.sin(i * 0.23) > -0.55;  // short gaps between words
         var h = speech ? 6 + Math.abs(Math.sin(i * 1.7)) * 12 + Math.abs(Math.sin(i * 0.37)) * 8 : 2;
@@ -349,15 +352,16 @@
         barsEl.appendChild(b); bars.push(b);
       }
     };
-    rebuildWave();
+    placeLabels(); rebuildWave();
+    v.addEventListener("loadedmetadata", function () { if (isFinite(v.duration) && v.duration > 0) { DUR = v.duration * 1000; placeLabels(); rebuildWave(true); } });
     function stamp(ms) {
-      var s = Math.floor((FROM + ms) / 1000), m = Math.floor(s / 60) % 60, h = Math.floor(s / 3600);
+      var s = Math.floor((tr.from + ms) / 1000), m = Math.floor(s / 60) % 60, h = Math.floor(s / 3600);
       s = s % 60;
       return [h, m, s].map(function (n) { return (n < 10 ? "0" : "") + n; }).join(":");
     }
-    function tick(now) {
+    function tick() {
       if (!active) return;
-      var ms = (now - t0) % LOOP, x = ms / LOOP * W;
+      var ms = Math.min(DUR, (v.currentTime || 0) * 1000), x = ms / DUR * W;
       ph.style.transform = "translateX(" + x.toFixed(1) + "px)";
       phTime.textContent = stamp(ms);
       var upto = Math.floor(x / BAR);
@@ -366,18 +370,12 @@
         else for (var k = Math.max(0, lastBar + 1); k <= upto && k < bars.length; k++) bars[k].classList.add("is-played");
         lastBar = upto;
       }
-      lines.forEach(function (l, j) {
-        var now_ = ms >= l.at && ms < l.end, done = ms >= l.end;
-        l.li.classList.toggle("is-active", now_);
-        l.li.classList.toggle("is-past", done);
-        labels[j].classList.toggle("is-active", now_);
-        var lit = done ? l.words.length : now_ ? Math.ceil((ms - l.at) / (l.end - l.at) * l.words.length) : 0;
-        l.words.forEach(function (w, k) { w.classList.toggle("is-lit", k < lit); });
-      });
+      tr.update(ms);
+      lines.forEach(function (l, j) { labels[j].classList.toggle("is-active", ms >= l.at && ms < l.end); });
       raf = requestAnimationFrame(tick);
     }
     controllers[sceneOf(barsEl)] = {
-      enter: function () { active = true; t0 = performance.now(); lastBar = -1; bars.forEach(function (b) { b.classList.remove("is-played"); }); raf = requestAnimationFrame(tick); },
+      enter: function () { active = true; try { v.currentTime = 0; } catch (e) {} lastBar = -1; bars.forEach(function (b) { b.classList.remove("is-played"); }); raf = requestAnimationFrame(tick); },
       leave: function () { active = false; cancelAnimationFrame(raf); }
     };
   })();
